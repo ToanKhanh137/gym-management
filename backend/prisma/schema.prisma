@@ -1,0 +1,192 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   // "owner" | "staff" | "pt" | "member"
+  phone        String?
+  dob          String?  // stored as ISO date string
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  member              Member?
+  trainer             Trainer?
+  feedbacksGiven      Feedback[]        @relation("FeedbackGiver")
+  maintenanceReported MaintenanceRequest[] @relation("Reporter")
+  maintenanceResolved MaintenanceRequest[] @relation("Resolver")
+  trainingLogsRecorded TrainingLog[]    @relation("RecordedBy")
+  subscriptionsCreated Subscription[]  @relation("CreatedBy")
+
+  @@map("users")
+}
+
+model Member {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique @map("user_id")
+  memberCode   String   @unique @map("member_code")
+  occupation   String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user          User           @relation(fields: [userId], references: [id])
+  subscriptions Subscription[]
+  trainingLogs  TrainingLog[]
+  feedbacks     Feedback[]     @relation("FeedbackSender")
+
+  @@map("members")
+}
+
+model Trainer {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique @map("user_id")
+  speciality String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User      @relation(fields: [userId], references: [id])
+  schedules TrainerSchedule[]
+
+  @@map("trainers")
+}
+
+model TrainerSchedule {
+  id        Int    @id @default(autoincrement())
+  trainerId Int    @map("trainer_id")
+  dayOfWeek Int    // 0=Sun, 1=Mon, ...
+  startTime String // "08:00"
+  endTime   String // "17:00"
+
+  trainer Trainer @relation(fields: [trainerId], references: [id])
+
+  @@map("trainer_schedules")
+}
+
+model MembershipPackage {
+  id           Int      @id @default(autoincrement())
+  name         String
+  type         String   // "per_session" | "monthly" | "quarterly" | "yearly" | "vip" | "pt"
+  durationDays Int?     @map("duration_days")   // null for per_session
+  totalSessions Int?    @map("total_sessions")  // for per_session
+  price        Float
+  description  String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  subscriptions Subscription[]
+
+  @@map("membership_packages")
+}
+
+model Subscription {
+  id            Int      @id @default(autoincrement())
+  memberId      Int      @map("member_id")
+  packageId     Int      @map("package_id")
+  startDate     String   @map("start_date")   // ISO date
+  endDate       String?  @map("end_date")     // null for per_session only
+  sessionsTotal Int?     @map("sessions_total")
+  sessionsUsed  Int      @default(0) @map("sessions_used")
+  status        String   @default("active")   // "active" | "expired" | "cancelled"
+  paymentMethod String   @map("payment_method") // "cash" | "bank_transfer" | "e_wallet"
+  amountPaid    Float    @map("amount_paid")
+  paidAt        DateTime @map("paid_at")
+  createdById   Int      @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  member      Member            @relation(fields: [memberId], references: [id])
+  package     MembershipPackage @relation(fields: [packageId], references: [id])
+  createdBy   User              @relation("CreatedBy", fields: [createdById], references: [id])
+  trainingLogs TrainingLog[]
+
+  @@map("subscriptions")
+}
+
+model Room {
+  id        Int      @id @default(autoincrement())
+  roomCode  String   @unique @map("room_code")
+  name      String
+  type      String   // "gym" | "yoga" | "fitness" | "other"
+  capacity  Int?
+  status    String   @default("active") // "active" | "inactive" | "maintenance"
+  createdAt DateTime @default(now()) @map("created_at")
+
+  equipment Equipment[]
+
+  @@map("rooms")
+}
+
+model Equipment {
+  id           Int      @id @default(autoincrement())
+  roomId       Int?     @map("room_id")
+  equipmentCode String  @unique @map("equipment_code")
+  name         String
+  quantity     Int      @default(1)
+  importedAt   String?  @map("imported_at")
+  warrantyUntil String? @map("warranty_until")
+  origin       String?
+  status       String   @default("good") // "good" | "damaged" | "maintenance" | "retired"
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  room               Room?               @relation(fields: [roomId], references: [id])
+  maintenanceRequests MaintenanceRequest[]
+
+  @@map("equipment")
+}
+
+model MaintenanceRequest {
+  id           Int      @id @default(autoincrement())
+  equipmentId  Int      @map("equipment_id")
+  reportedById Int      @map("reported_by_id")
+  description  String
+  status       String   @default("pending") // "pending" | "in_progress" | "resolved"
+  reportedAt   DateTime @default(now()) @map("reported_at")
+  resolvedAt   DateTime? @map("resolved_at")
+  resolvedById Int?     @map("resolved_by_id")
+
+  equipment  Equipment @relation(fields: [equipmentId], references: [id])
+  reportedBy User      @relation("Reporter", fields: [reportedById], references: [id])
+  resolvedBy User?     @relation("Resolver", fields: [resolvedById], references: [id])
+
+  @@map("maintenance_requests")
+}
+
+model TrainingLog {
+  id             Int      @id @default(autoincrement())
+  memberId       Int      @map("member_id")
+  subscriptionId Int      @map("subscription_id")
+  checkedInAt    DateTime @default(now()) @map("checked_in_at")
+  checkedOutAt   DateTime? @map("checked_out_at")
+  recordedById   Int      @map("recorded_by_id")
+  notes          String?
+
+  member       Member       @relation(fields: [memberId], references: [id])
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  recordedBy   User         @relation("RecordedBy", fields: [recordedById], references: [id])
+
+  @@map("training_logs")
+}
+
+model Feedback {
+  id          Int      @id @default(autoincrement())
+  memberId    Int      @map("member_id")
+  targetType  String   @map("target_type") // "staff" | "facility" | "pt"
+  targetId    Int?     @map("target_id")   // FK to users or rooms
+  rating      Int      // 1–5
+  comment     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  member Member @relation("FeedbackSender", fields: [memberId], references: [id])
+  givenBy User? @relation("FeedbackGiver", fields: [targetId], references: [id])
+
+  @@map("feedbacks")
+}

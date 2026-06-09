@@ -1,0 +1,75 @@
+# ===========================
+# Dependencies
+# ===========================
+node_modules/
+
+# ===========================
+# Environment & Secrets
+# ===========================
+.env
+.env.local
+.env.*.local
+
+# ===========================
+# Database (SQLite)
+# ===========================
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# ===========================
+# Prisma generated
+# ===========================
+# (keep prisma/migrations/ in git, ignore the generated client)
+
+# ===========================
+# Build output
+# ===========================
+dist/
+build/
+
+# ===========================
+# Logs
+# ===========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===========================
+# OS files
+# ===========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===========================
+# IDE / Editor
+# ===========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# ===========================
+# Misc
+# ===========================
+.npm
+.eslintcache
+.cache/
+.temp/
+tmp/
