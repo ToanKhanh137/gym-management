@@ -37,12 +37,35 @@
 - `[09:43]` _(AI Agent)_ — Xóa thư mục `docs/` ngoài repo (đã move vào trong repo)
 - `[09:47]` _(AI Agent)_ — Cập nhật `CONTRIBUTING.md`: thêm JWT_SECRET note, workflow, hướng dẫn ghi docs
 - `[09:54]` _(AI Agent)_ — Cập nhật `WORK_LOG.md` và `DOC_NOTES.md` (file này)
+- `[09:56]` _(AI Agent)_ — Bắt đầu code UI frontend
+- `[09:56]` _(AI Agent)_ — Generate ảnh background phòng gym cho Login page (AI image)
+- `[09:58]` _(AI Agent)_ — Config `vite.config.js` proxy → backend `:3001`
+- `[09:58]` _(AI Agent)_ — Viết toàn bộ `index.css` (design system: CSS variables, dark theme, layout, cards, table, modal, buttons, forms)
+- `[09:59]` _(AI Agent)_ — Tạo `src/api/client.js` (axios + JWT interceptor + auto-logout 401)
+- `[09:59]` _(AI Agent)_ — Tạo `src/context/AuthContext.jsx` (login/logout + persist localStorage)
+- `[10:00]` _(AI Agent)_ — Tạo `src/components/ProtectedRoute.jsx` (guard route theo role)
+- `[10:00]` _(AI Agent)_ — Tạo `src/components/Layout.jsx` (sidebar với nav theo role, user info, logout)
+- `[10:00]` _(AI Agent)_ — Tạo `src/pages/Login.jsx` (gym background + form + quick login demo)
+- `[10:01]` _(AI Agent)_ — Tạo `src/pages/Dashboard.jsx` (stats cards + revenue chart + quick actions)
+- `[10:01]` _(AI Agent)_ — Tạo `src/pages/Members.jsx` (table + search + add modal)
+- `[10:02]` _(AI Agent)_ — Tạo `src/pages/MemberDetail.jsx` (profile + tab subs/logs/feedback + register package modal)
+- `[10:03]` _(AI Agent)_ — Tạo `src/pages/Packages.jsx` (card grid + create/edit modal)
+- `[10:04]` _(AI Agent)_ — Tạo `src/pages/CheckIn.jsx` (live search + today log table + checkout)
+- `[10:05]` _(AI Agent)_ — Tạo `src/pages/Equipment.jsx` (table + báo hỏng modal + resolve bảo trì)
+- `[10:05]` _(AI Agent)_ — Tạo `src/pages/Reports.jsx` (KPI cards + revenue date filter + bar chart)
+- `[10:06]` _(AI Agent)_ — Tạo `src/pages/MemberProfile.jsx` (self-service: stats + training log)
+- `[10:06]` _(AI Agent)_ — Tạo `src/App.jsx` (routing đầy đủ, role-based redirect)
+- `[10:06]` _(AI Agent)_ — Khởi chạy `npm run dev` frontend thành công tại port 5173
+- `[10:03]` _(AI Agent)_ — Fix lỗi import path (`../../` → `../`) cho tất cả pages
+- `[12:09]` _(AI Agent)_ — Cài `lucide-react`, thay emoji bằng SVG icon chuyên nghiệp
+- `[12:09]` _(AI Agent)_ — Cập nhật WORK_LOG và DOC_NOTES
 
 ### Tổng kết ngày 09/06
 - ✅ Đã làm: Toàn bộ backend API (11 modules, 30+ endpoints), DB Neon PostgreSQL live, seed data, repo GitHub, docs hệ thống
-- ✅ Đã làm: Frontend scaffold (React + Vite), chưa có UI
-- ⬜ Chưa làm: UI frontend, unit test, phân công thành viên
-- 🔜 Ngày mai cần: Code UI frontend (Login → Dashboard → quản lý Hội viên)
+- ✅ Đã làm: Frontend đầy đủ 9 trang chính (Login, Dashboard, Members, MemberDetail, Packages, CheckIn, Equipment, Reports, MemberProfile)
+- ✅ Đã làm: Dark theme gym aesthetic, design system CSS, lucide-react icons
+- ⬜ Chưa làm: Rooms, Users, Feedbacks, Subscriptions pages; unit test; phân công thành viên
+- 🔜 Ngày mai cần: Hoàn thiện các trang còn lại, connect UI với backend cho từng luồng, test end-to-end
 
 ---
 
