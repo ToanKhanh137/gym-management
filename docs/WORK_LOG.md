@@ -57,15 +57,22 @@
 - `[10:06]` _(AI Agent)_ — Tạo `src/App.jsx` (routing đầy đủ, role-based redirect)
 - `[10:06]` _(AI Agent)_ — Khởi chạy `npm run dev` frontend thành công tại port 5173
 - `[10:03]` _(AI Agent)_ — Fix lỗi import path (`../../` → `../`) cho tất cả pages
-- `[12:09]` _(AI Agent)_ — Cài `lucide-react`, thay emoji bằng SVG icon chuyên nghiệp
+- `[12:09]` _(AI Agent)_ — Cài `lucide-react`, thay emoji bằng SVG icon chuyên nghiệp (Dashboard + Layout)
 - `[12:09]` _(AI Agent)_ — Cập nhật WORK_LOG và DOC_NOTES
+- `[12:15]` _(AI Agent)_ — Sửa `README.md`: xóa toàn bộ reference SQLite → Neon PostgreSQL, cập nhật setup steps, thêm lucide-react vào tech stack
+- `[12:15]` _(AI Agent)_ — Thêm mobile-responsive CSS vào `index.css`: breakpoint 768px, mobile header, bottom navigation, sidebar overlay, card stacking
+- `[12:18]` _(AI Agent)_ — Cập nhật `Layout.jsx` hỗ trợ mobile: hamburger menu, sidebar slide-in, overlay, bottom nav bar với 4 item chính theo role
+- `[12:19]` _(AI Agent)_ — Thay emoji trong `Members.jsx`, `CheckIn.jsx`, `Equipment.jsx` bằng Lucide icons (Search, Plus, ChevronRight, Wrench...)
+- `[12:20]` _(AI Agent)_ — Fix bottom nav item sizing (flex:1, max-width:80px)
+- `[12:24]` _(AI Agent)_ — Cập nhật WORK_LOG và DOC_NOTES
 
 ### Tổng kết ngày 09/06
 - ✅ Đã làm: Toàn bộ backend API (11 modules, 30+ endpoints), DB Neon PostgreSQL live, seed data, repo GitHub, docs hệ thống
-- ✅ Đã làm: Frontend đầy đủ 9 trang chính (Login, Dashboard, Members, MemberDetail, Packages, CheckIn, Equipment, Reports, MemberProfile)
-- ✅ Đã làm: Dark theme gym aesthetic, design system CSS, lucide-react icons
+- ✅ Đã làm: Frontend 9 trang chính, dark theme, lucide-react icons nhất quán
+- ✅ Đã làm: Responsive layout — desktop sidebar + mobile bottom nav + hamburger
+- ✅ Đã làm: Sửa README phản ánh đúng Neon PostgreSQL
 - ⬜ Chưa làm: Rooms, Users, Feedbacks, Subscriptions pages; unit test; phân công thành viên
-- 🔜 Ngày mai cần: Hoàn thiện các trang còn lại, connect UI với backend cho từng luồng, test end-to-end
+- 🔜 Ngày mai cần: Hoàn thiện các trang còn lại, test end-to-end
 
 ---
 

@@ -22,50 +22,70 @@
 ### UC-01: Đăng ký hội viên mới
 - Actor chính: Nhân viên quản lý
 - Actor phụ: Hội viên
-- Mô tả ngắn: _(ghi khi code xong)_
-- Luồng chính: _(ghi khi code xong)_
-- Exception: _(ghi khi code xong)_
+- Luồng chính:
+  1. NV nhập thông tin (tên, email, mật khẩu, SĐT, ngày sinh, nghề nghiệp)
+  2. POST `/api/members` → backend tạo User + Member, sinh `memberCode` tự động (`MEM` + 3 số)
+  3. Trả về memberCode, redirect sang trang chi tiết hội viên
+- Exception: Email đã tồn tại → lỗi 409; Mật khẩu < 6 ký tự → báo lỗi trước khi gửi
+- UI: Modal form trong trang `/members`, validation phía client trước khi gửi
 
 ### UC-02: Đăng nhập hệ thống
 - Actor: Tất cả
-- Mô tả ngắn:
 - Luồng chính:
-- Exception:
+  1. Nhập email + mật khẩu, POST `/api/auth/login`
+  2. Backend trả JWT token + thông tin user (name, role, id)
+  3. Lưu token vào `localStorage`, redirect theo role (`owner/staff/pt` → `/dashboard`, `member` → `/profile`)
+- Exception: Sai email/mật khẩu → 401; Token hết hạn 24h → tự động logout, redirect `/login`
+- UI: Trang `/login` với background ảnh phòng gym, 4 nút quick login demo
 
 ### UC-03: Quản lý gói tập (CRUD)
-- Actor chính: Chủ phòng tập / Nhân viên
-- Mô tả ngắn:
-- Luồng chính:
+- Actor chính: Chủ phòng tập
+- Luồng chính: Xem danh sách gói (card grid), tạo/sửa qua modal, tắt gói (soft-delete `isActive=false`)
+- API: GET/POST/PATCH/DELETE `/api/packages`
+- UI: Trang `/packages` hiển thị card grid, chỉ chủ phòng tập thấy nút sửa/tắt
 
 ### UC-04: Đăng ký / Gia hạn gói tập cho hội viên
 - Actor chính: Nhân viên
-- Actor phụ: Hội viên
-- Mô tả ngắn:
 - Luồng chính:
+  1. Vào trang chi tiết hội viên `/members/:id`
+  2. Chọn gói tập, ngày bắt đầu, phương thức thanh toán
+  3. POST `/api/subscriptions` → tạo subscription, tính `endDate` tự động
+- Exception: Hội viên đã có gói active → cần hủy trước
 
 ### UC-05: Ghi nhận lịch sử tập luyện (Check-in)
 - Actor chính: Nhân viên / PT
-- Mô tả ngắn:
+- Luồng chính:
+  1. Tìm hội viên bằng tên/email/SĐT (live search)
+  2. Chọn gói tập đang active
+  3. POST `/api/training-logs` → ghi `checkedInAt`
+  4. Khi ra về: PATCH `/api/training-logs/:id/checkout` → ghi `checkedOutAt`
+- UI: Trang `/checkin` — dropdown tìm kiếm real-time, bảng log hôm nay refresh 10 giây/lần
 
 ### UC-06: Quản lý thiết bị phòng tập
 - Actor chính: Nhân viên / Chủ phòng tập
-- Mô tả ngắn:
+- Luồng chính: Thêm thiết bị mới, báo hỏng → tạo MaintenanceRequest, xác nhận đã sửa → status → `resolved`
+- UI: Trang `/equipment` — hiển thị alert nếu có yêu cầu bảo trì đang chờ
 
 ### UC-07: Quản lý nhân sự / PT
 - Actor chính: Chủ phòng tập
-- Mô tả ngắn:
+- Luồng chính: Tạo tài khoản staff/pt, gán role, xết duyệt
+- API: GET/POST/PATCH `/api/users` (chỉ owner)
+- UI: Trang `/users` — chưa làm
 
 ### UC-08: Xem báo cáo thống kê doanh thu
 - Actor chính: Chủ phòng tập
-- Mô tả ngắn:
+- Luồng chính: Chọn khoảng ngày, GET `/api/reports/revenue` → hiển thị tổng, phân bổ theo gói
+- UI: Trang `/reports` — KPI cards + bar chart + filter ngày
 
 ### UC-09: Gửi phản hồi / đánh giá dịch vụ
 - Actor chính: Hội viên
-- Mô tả ngắn:
+- API: POST `/api/feedbacks`
+- UI: Trang `/feedback` — chưa làm
 
 ### UC-10: Quản lý tài khoản người dùng
 - Actor chính: Chủ phòng tập / Admin
-- Mô tả ngắn:
+- API: PATCH `/api/auth/change-password`
+- UI: Trang `/users` — chưa làm
 
 ---
 
@@ -183,12 +203,14 @@
 > Dùng cho: Architectural Design (AD)
 
 - **Pattern:** Layered Architecture (Routes → Middleware → Prisma ORM → DB)
-- **Frontend:** React 19 + Vite 8 + React Router DOM 7 + TanStack Query 5
+- **Frontend:** React 19 + Vite 8 + React Router DOM 7 + TanStack Query 5 + Lucide React
 - **Backend:** Node.js 24 + Express 4 (ES Modules)
-- **DB:** PostgreSQL (Neon cloud) qua Prisma ORM 5
-- **Auth:** JWT (jsonwebtoken) + bcryptjs, expire 24h, Bearer token
+- **DB:** PostgreSQL (Neon cloud, Singapore region) qua Prisma ORM 5
+- **Auth:** JWT (jsonwebtoken) + bcryptjs, expire 24h, Bearer token trong `Authorization` header
 - **Phân quyền:** Role-based — 4 roles: `owner`, `staff`, `pt`, `member`
 - **Cấu trúc:** Monorepo — `/backend` (port 3001) + `/frontend` (port 5173)
+- **Responsive:** Desktop (sidebar cố định) / Mobile (bottom nav + hamburger ≤ 768px)
+- **State management:** TanStack Query — cache, refetch tự động, no Redux needed
 
 ---
 
@@ -200,6 +222,9 @@
 | **Singleton** | `src/prisma/client.js` — export 1 PrismaClient instance | Tránh tạo nhiều DB connection |
 | **Middleware Chain** | `auth.middleware.js` → authenticate → authorize | Tách biệt xác thực và phân quyền |
 | **Repository (qua Prisma)** | Tất cả routes dùng `prisma.model.findMany/create/update` | Abstraction layer cho DB |
+| **Context / Provider** | `AuthContext.jsx` bao toàn bộ app | Global auth state, tránh prop drilling |
+| **Protected Route** | `ProtectedRoute.jsx` bao từng page | Guard route theo auth + role |
+| **Responsive Layout** | CSS breakpoint 768px — sidebar ↔ bottom nav | Desktop và mobile dùng cùng codebase |
 
 ---
 
@@ -217,17 +242,23 @@
 ## 📐 GIAO DIỆN — Màn hình đã làm
 > Dùng cho: GUI Design (DD)
 
-| Màn hình | Route/URL | Actor | Trạng thái |
+| Màn hình | Route | Actor | Trạng thái |
 |---|---|---|---|
-| Login | /login | Tất cả | ⬜ |
-| Dashboard Member | /member/dashboard | Hội viên | ⬜ |
-| Dashboard Staff | /staff/dashboard | Nhân viên | ⬜ |
-| Dashboard Owner | /owner/dashboard | Chủ phòng | ⬜ |
-| Quản lý Hội viên | /staff/members | Nhân viên | ⬜ |
-| Chi tiết Hội viên | /staff/members/:id | Nhân viên | ⬜ |
-| Đăng ký Gói tập | /staff/subscriptions/new | Nhân viên | ⬜ |
-| Quản lý Thiết bị | /staff/equipment | Nhân viên | ⬜ |
-| Báo cáo Doanh thu | /owner/reports | Chủ phòng | ⬜ |
+| Login | `/login` | Tất cả | ✅ Xong |
+| Dashboard | `/dashboard` | Owner, Staff, PT | ✅ Xong |
+| Danh sách Hội viên | `/members` | Owner, Staff, PT | ✅ Xong |
+| Chi tiết Hội viên | `/members/:id` | Owner, Staff, PT | ✅ Xong |
+| Quản lý Gói tập | `/packages` | Tất cả (sửa: chỉ Owner) | ✅ Xong |
+| Check-in | `/checkin` | Owner, Staff, PT | ✅ Xong |
+| Thiết bị | `/equipment` | Owner, Staff | ✅ Xong |
+| Báo cáo doanh thu | `/reports` | Owner | ✅ Xong |
+| Hồ sơ Hội viên | `/profile` | Member | ✅ Xong |
+| Đăng ký / Gia hạn | `/subscriptions` | Owner, Staff | ⬜ Chưa làm |
+| Phòng tập | `/rooms` | Owner, Staff | ⬜ Chưa làm |
+| Nhân sự | `/users` | Owner | ⬜ Chưa làm |
+| Phản hồi | `/feedbacks` | Owner, Staff | ⬜ Chưa làm |
+| Gói tập (Member) | `/my-subscription` | Member | ⬜ Chưa làm |
+| Lịch sử tập (Member) | `/my-training` | Member | ⬜ Chưa làm |
 
 ---
 
