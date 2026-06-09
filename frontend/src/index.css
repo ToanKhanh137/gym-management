@@ -70,6 +70,7 @@ input, select, textarea { font-family: inherit; }
 /* Desktop: always show table, hide cards */
 .mobile-hide-table { display: block; }
 .mobile-only-cards { display: none; }
+.mobile-hide-text { display: inline; }
 
 .sidebar-logo {
   padding: 20px 20px 16px;
@@ -296,6 +297,10 @@ input, select, textarea { font-family: inherit; }
   /* Switch table ↔ card layout */
   .mobile-hide-table { display: none; }
   .mobile-only-cards { display: block; }
+  .mobile-hide-text { display: none; }
+
+  /* Table header: title always visible */
+  .table-title { white-space: nowrap; min-width: fit-content; }
 
   /* Cards tighter */
   .card { padding: 14px; }

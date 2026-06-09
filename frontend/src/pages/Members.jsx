@@ -57,8 +57,8 @@ export default function Members() {
             <span className="table-title">
               Hội viên <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({members.length})</span>
             </span>
-            <div className="flex gap-3">
-              <div className="search-box">
+            <div style={{ display: 'flex', gap: 8, width: '100%', justifyContent: 'flex-end' }}>
+              <div className="search-box" style={{ flex: 1, maxWidth: 280 }}>
                 <Search size={14} className="search-icon" />
                 <input
                   className="search-input"
@@ -67,8 +67,8 @@ export default function Members() {
                   onChange={e => setSearch(e.target.value)}
                 />
               </div>
-              <button className="btn btn-primary" onClick={() => { setShowModal(true); setFormError(''); }}>
-                <Plus size={15} /> Thêm hội viên
+              <button className="btn btn-primary" style={{ flexShrink: 0 }} onClick={() => { setShowModal(true); setFormError(''); }}>
+                <Plus size={15} /><span className="mobile-hide-text"> Thêm hội viên</span>
               </button>
             </div>
           </div>
