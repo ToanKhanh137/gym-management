@@ -81,63 +81,84 @@ export default function Members() {
               <div className="empty-state-text">{search ? 'Không tìm thấy hội viên' : 'Chưa có hội viên nào'}</div>
             </div>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Hội viên</th>
-                  <th>Mã HV</th>
-                  <th>Liên hệ</th>
-                  <th>Gói tập</th>
-                  <th>Trạng thái</th>
-                  <th>Ngày đăng ký</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              {/* Desktop table */}
+              <div className="mobile-hide-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Hội viên</th><th>Mã HV</th><th>Liên hệ</th>
+                      <th>Gói tập</th><th>Trạng thái</th><th>Ngày đăng ký</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {members.map(m => {
+                      const sub = m.subscriptions?.[0];
+                      return (
+                        <tr key={m.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/members/${m.id}`)}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div className="avatar avatar-sm" style={{ background: getAvatarColor(m.id), color: 'white' }}>
+                                {getInitials(m.user?.name)}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: 13 }}>{m.user?.name}</div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.user?.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td><span className="member-code">{m.memberCode}</span></td>
+                          <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{m.user?.phone || '—'}</td>
+                          <td>
+                            {sub ? (
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 500 }}>{sub.package?.name}</div>
+                                {sub.endDate && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>HSD: {sub.endDate}</div>}
+                              </div>
+                            ) : <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Chưa đăng ký</span>}
+                          </td>
+                          <td>{sub ? (statusBadge[sub.status] || <span className="badge badge-gray">{sub.status}</span>) : <span className="badge badge-gray">Chưa có gói</span>}</td>
+                          <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(m.createdAt).toLocaleDateString('vi-VN')}</td>
+                          <td onClick={e => e.stopPropagation()}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/members/${m.id}`)}><ChevronRight size={14} /></button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile card list */}
+              <div className="mobile-only-cards" style={{ padding: '8px 0' }}>
                 {members.map(m => {
                   const sub = m.subscriptions?.[0];
                   return (
-                    <tr key={m.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/members/${m.id}`)}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div className="avatar avatar-sm" style={{ background: getAvatarColor(m.id), color: 'white' }}>
-                            {getInitials(m.user?.name)}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 600, fontSize: 13 }}>{m.user?.name}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.user?.email}</div>
-                          </div>
+                    <div key={m.id} onClick={() => navigate(`/members/${m.id}`)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div className="avatar avatar-md" style={{ background: getAvatarColor(m.id), color: 'white', flexShrink: 0 }}>
+                        {getInitials(m.user?.name)}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.user?.name}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                          <span className="member-code">{m.memberCode}</span>
+                          {m.user?.phone && <span style={{ marginLeft: 8 }}>{m.user.phone}</span>}
                         </div>
-                      </td>
-                      <td><span className="member-code">{m.memberCode}</span></td>
-                      <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{m.user?.phone || '—'}</td>
-                      <td>
-                        {sub ? (
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 500 }}>{sub.package?.name}</div>
-                            {sub.endDate && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>HSD: {sub.endDate}</div>}
-                          </div>
-                        ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Chưa đăng ký</span>
-                        )}
-                      </td>
-                      <td>
-                        {sub ? (statusBadge[sub.status] || <span className="badge badge-gray">{sub.status}</span>)
-                          : <span className="badge badge-gray">Chưa có gói</span>}
-                      </td>
-                      <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {new Date(m.createdAt).toLocaleDateString('vi-VN')}
-                      </td>
-                      <td onClick={e => e.stopPropagation()}>
-                        <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/members/${m.id}`)}>
-                          <ChevronRight size={14} />
-                        </button>
-                      </td>
-                    </tr>
+                        {sub && <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3 }}>{sub.package?.name}</div>}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                        {sub ? statusBadge[sub.status] : <span className="badge badge-gray" style={{ fontSize: 10 }}>Chưa có gói</span>}
+                        <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
