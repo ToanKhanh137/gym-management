@@ -214,7 +214,7 @@ input, select, textarea { font-family: inherit; }
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 4px 12px;
+  padding: 4px 8px;
   color: var(--text-muted);
   font-size: 10px;
   font-weight: 500;
@@ -222,7 +222,9 @@ input, select, textarea { font-family: inherit; }
   border-radius: 8px;
   text-decoration: none;
   transition: all var(--transition);
-  min-width: 56px;
+  flex: 1;
+  max-width: 80px;
+  overflow: hidden;
 }
 .bottom-nav-item.active { color: var(--primary); }
 .bottom-nav-item:hover { color: var(--text-primary); }
