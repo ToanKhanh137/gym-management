@@ -161,6 +161,115 @@ input, select, textarea { font-family: inherit; }
   min-height: 100vh;
 }
 
+/* ============ MOBILE HEADER ============ */
+.mobile-header {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 52px;
+  align-items: center;
+  justify-content: space-between;
+}
+.mobile-header-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+.mobile-header-logo-icon {
+  width: 30px; height: 30px;
+  background: var(--primary);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-menu-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* ============ BOTTOM NAV (mobile) ============ */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+}
+.bottom-nav-items {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 12px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all var(--transition);
+  min-width: 56px;
+}
+.bottom-nav-item.active { color: var(--primary); }
+.bottom-nav-item:hover { color: var(--text-primary); }
+
+/* ============ SIDEBAR OVERLAY (mobile) ============ */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+/* ============ RESPONSIVE BREAKPOINTS ============ */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; }
+
+  .main-content { margin-left: 0; padding-bottom: 70px; }
+
+  .mobile-header { display: flex; }
+  .bottom-nav { display: block; }
+
+  .page-header { padding: 16px 16px 0; }
+  .page-body { padding: 16px; }
+  .page-title { font-size: 18px; }
+
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+
+  .table-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .search-input { width: 100%; }
+  .search-input:focus { width: 100%; }
+
+  .modal { max-width: 100%; margin: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+  .login-right { padding: 32px 24px; max-width: 100%; }
+}
+
 .page-header {
   padding: 24px 32px 0;
 }

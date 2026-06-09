@@ -1,9 +1,10 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Users, Ticket, ClipboardList, Home,
   Dumbbell, UserCog, BarChart2, MessageSquare, CheckSquare,
-  Calendar, User, LogOut, Wrench, Star
+  Calendar, User, LogOut, Wrench, Star, Menu, X
 } from 'lucide-react';
 
 const NAV = {
@@ -49,18 +50,34 @@ const ROLE_LABELS = {
   member: 'Hội viên',
 };
 
+// Bottom nav shows only the most important items (max 5)
+const BOTTOM_NAV = {
+  owner:  ['dashboard', 'members', 'checkin', 'reports'],
+  staff:  ['dashboard', 'members', 'checkin', 'equipment'],
+  pt:     ['dashboard', 'members', 'checkin', 'training-logs'],
+  member: ['profile', 'my-subscription', 'my-training', 'feedback'],
+};
+
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const navItems = NAV[user?.role] || [];
-  const initials = user?.name?.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase() || '?';
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const navItems = NAV[user?.role] || [];
+  const bottomKeys = BOTTOM_NAV[user?.role] || [];
+  const bottomItems = navItems.filter(item =>
+    bottomKeys.some(k => item.to.includes(k))
+  );
+
+  const initials = user?.name?.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase() || '?';
   const handleLogout = () => { logout(); navigate('/login'); };
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        {/* Logo */}
+      {/* Sidebar */}
+      <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">
             <Dumbbell size={18} color="white" />
@@ -69,9 +86,17 @@ export default function Layout({ children }) {
             <div className="sidebar-logo-text">GymPro</div>
             <div className="sidebar-logo-sub">Management</div>
           </div>
+          {/* Close button — mobile only */}
+          <button
+            className="mobile-menu-btn"
+            onClick={closeSidebar}
+            style={{ marginLeft: 'auto', display: 'none' }}
+            id="sidebar-close-btn"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        {/* Navigation */}
         <nav className="sidebar-nav">
           {navItems.map(item => {
             const Icon = item.icon;
@@ -80,6 +105,7 @@ export default function Layout({ children }) {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                onClick={closeSidebar}
               >
                 <Icon size={16} className="nav-item-icon" />
                 {item.label}
@@ -88,10 +114,9 @@ export default function Layout({ children }) {
           })}
         </nav>
 
-        {/* User info */}
         <div className="sidebar-user">
           <div className="sidebar-avatar">{initials}</div>
-          <div style={{ minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <div className="sidebar-user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.name}
             </div>
@@ -103,7 +128,56 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      <main className="main-content">{children}</main>
+      {/* Overlay — closes sidebar on mobile */}
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={closeSidebar} />
+      )}
+
+      {/* Main content */}
+      <main className="main-content">
+        {/* Mobile top header */}
+        <header className="mobile-header">
+          <div className="mobile-header-logo">
+            <div className="mobile-header-logo-icon">
+              <Dumbbell size={16} color="white" />
+            </div>
+            GymPro
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{user?.name}</div>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+          </div>
+        </header>
+
+        {children}
+      </main>
+
+      {/* Bottom navigation — mobile only */}
+      <nav className="bottom-nav">
+        <div className="bottom-nav-items">
+          {bottomItems.map(item => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={`bottom-nav-item${isActive ? ' active' : ''}`}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                <span>{item.label.split(' ')[0]}</span>
+              </NavLink>
+            );
+          })}
+          {/* Always show logout at end */}
+          <button className="bottom-nav-item" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <LogOut size={20} strokeWidth={1.8} />
+            <span>Thoát</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

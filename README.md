@@ -1,4 +1,4 @@
-# 🏋️ Gym Management System
+# Gym Management System
 
 > **Hệ thống Quản lý Phòng tập Gym**  
 > Môn học: Phát triển phần mềm theo chuẩn kỹ năng ITSS — HK 20252  
@@ -6,44 +6,45 @@
 
 ---
 
-## 📋 Mục lục
-- [Tech Stack](#-tech-stack)
-- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Cài đặt và chạy](#-cài-đặt-và-chạy)
-- [Tài khoản test](#-tài-khoản-test)
-- [API Endpoints](#-api-endpoints)
-- [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
+## Mục lục
+- [Tech Stack](#tech-stack)
+- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+- [Cài đặt và chạy](#cài-đặt-và-chạy)
+- [Tài khoản test](#tài-khoản-test)
+- [API Endpoints](#api-endpoints)
+- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Tầng | Công nghệ | Phiên bản |
 |---|---|---|
 | Runtime | Node.js | v24.15.0 |
 | Backend | Express | ^4.21.2 |
 | ORM | Prisma | ^5.22.0 |
-| Database | SQLite | (file-based, không cần cài) |
+| **Database** | **Neon PostgreSQL (cloud)** | — |
 | Auth | JWT (jsonwebtoken) + bcryptjs | ^9.0.2 / ^2.4.3 |
 | Frontend | React | ^19.2.6 |
 | Build tool | Vite | ^8.0.12 |
 | HTTP client | Axios | ^1.17.0 |
 | Routing | React Router DOM | ^7.17.0 |
 | Data fetching | TanStack Query | ^5.101.0 |
+| Icons | Lucide React | latest |
 | Package manager | npm | 11.x |
 
 ---
 
-## 💻 Yêu cầu hệ thống
+## Yêu cầu hệ thống
 
 - **Node.js** >= 18.x ([tải tại nodejs.org](https://nodejs.org))
 - **npm** >= 9.x (đi kèm Node.js)
 - **Git** ([tải tại git-scm.com](https://git-scm.com))
-- Không cần cài MySQL/PostgreSQL — dùng SQLite (file `.db`)
+- Không cần cài database — dùng **Neon PostgreSQL trên cloud** (shared toàn nhóm)
 
 ---
 
-## 🚀 Cài đặt và chạy
+## Cài đặt và chạy
 
 ### 1. Clone repo về máy
 
@@ -59,15 +60,13 @@ cd backend
 
 # Tạo file cấu hình môi trường
 cp .env.example .env
+# → Mở .env, điền DATABASE_URL và JWT_SECRET (lấy từ nhóm trưởng)
 
 # Cài dependencies
 npm install
 
-# Tạo database và chạy migration (lần đầu)
-npx prisma migrate dev
-
-# Seed dữ liệu mẫu (lần đầu)
-node src/prisma/seed.js
+# Áp dụng schema lên Neon (lần đầu — data đã có sẵn trên cloud)
+npx prisma migrate deploy
 
 # Chạy development server
 npm run dev
@@ -88,9 +87,9 @@ npm install
 npm run dev
 ```
 
-> Frontend chạy tại: **http://localhost:5173**
+> Frontend chạy tại: **http://localhost:5173** (responsive — hoạt động trên cả desktop và mobile)
 
-### 4. Chạy cả hai cùng lúc (tóm tắt)
+### 4. Chạy cả hai cùng lúc
 
 ```bash
 # Terminal 1 — Backend
@@ -102,15 +101,14 @@ cd frontend && npm run dev
 
 ---
 
-## 🔧 Các lệnh hữu ích
+## Các lệnh hữu ích
 
 ```bash
 # --- Backend ---
 npm run dev              # Chạy backend (nodemon, tự reload khi sửa code)
-npm run start            # Chạy backend (không reload)
-npm run db:migrate       # Áp dụng migration mới
-npm run db:seed          # Reset và seed lại dữ liệu mẫu
-npm run db:studio        # Mở Prisma Studio (GUI xem DB trên browser)
+npm run db:migrate       # Áp dụng migration mới lên Neon
+npm run db:seed          # Seed lại dữ liệu mẫu (sẽ ghi đè data hiện tại!)
+npm run db:studio        # Mở Prisma Studio — GUI xem DB trên browser
 
 # --- Frontend ---
 npm run dev              # Chạy frontend dev server
@@ -121,7 +119,7 @@ npm run lint             # Kiểm tra lỗi ESLint
 
 ---
 
-## 👤 Tài khoản test
+## Tài khoản test
 
 | Email | Mật khẩu | Vai trò | Quyền hạn |
 |---|---|---|---|
@@ -132,7 +130,7 @@ npm run lint             # Kiểm tra lỗi ESLint
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 Base URL: `http://localhost:3001/api`
 
@@ -178,55 +176,46 @@ Base URL: `http://localhost:3001/api`
 
 ---
 
-## 📁 Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```
 gym-management/
 ├── README.md
+├── CONTRIBUTING.md           # Hướng dẫn setup cho thành viên
+├── docs/                     # Tài liệu nội bộ nhóm
 ├── backend/
-│   ├── .env                    # Biến môi trường (không commit)
-│   ├── .env.example            # Template .env
+│   ├── .env                  # Biến môi trường (KHÔNG commit — chứa DB credentials)
+│   ├── .env.example          # Template .env
 │   ├── package.json
 │   ├── prisma/
-│   │   ├── schema.prisma       # Schema database (10 models)
-│   │   ├── gym.db              # SQLite database (không commit)
-│   │   └── migrations/         # Lịch sử migration
+│   │   ├── schema.prisma     # Schema database (10 models)
+│   │   └── migrations/       # Lịch sử migration PostgreSQL
 │   └── src/
-│       ├── index.js            # Entry point Express
+│       ├── index.js          # Entry point Express
 │       ├── middleware/
-│       │   └── auth.middleware.js   # JWT + phân quyền
+│       │   └── auth.middleware.js
 │       ├── prisma/
-│       │   ├── client.js            # Prisma client singleton
-│       │   └── seed.js              # Seed dữ liệu mẫu
-│       └── routes/
-│           ├── auth.routes.js
-│           ├── user.routes.js
-│           ├── member.routes.js
-│           ├── package.routes.js
-│           ├── subscription.routes.js
-│           ├── room.routes.js
-│           ├── equipment.routes.js
-│           ├── trainingLog.routes.js
-│           ├── feedback.routes.js
-│           ├── maintenance.routes.js
-│           └── report.routes.js
+│       │   ├── client.js     # Prisma client singleton
+│       │   └── seed.js       # Seed dữ liệu mẫu
+│       └── routes/           # 11 route modules
 └── frontend/
-    ├── package.json
-    ├── vite.config.js
-    ├── index.html
+    ├── vite.config.js        # Proxy /api → localhost:3001
     └── src/
-        ├── main.jsx
-        └── App.jsx
+        ├── api/client.js     # Axios + JWT interceptor
+        ├── context/          # AuthContext
+        ├── components/       # Layout, ProtectedRoute
+        └── pages/            # 9 trang chính
 ```
 
 ---
 
-## 📝 Ghi chú phát triển
+## Ghi chú phát triển
 
-- File `gym.db` được bỏ qua trong git (`.gitignore`) — mỗi thành viên tự migrate local
-- Sau khi pull code mới có thể cần chạy `npx prisma migrate dev` nếu schema thay đổi
-- Backend dùng ES Modules (`"type": "module"` trong package.json)
-- JWT token hết hạn sau 24 giờ
+- **Database:** Neon PostgreSQL cloud — tất cả thành viên dùng chung, không cần cài local
+- **Sau khi pull** code mới có schema đổi: chạy `npx prisma migrate deploy`
+- **Backend** dùng ES Modules (`"type": "module"` trong package.json)
+- **JWT token** hết hạn sau 24 giờ — cần đăng nhập lại sau 24h
+- **Frontend** responsive — hoạt động trên desktop (sidebar) và mobile (bottom navigation)
 
 ---
 

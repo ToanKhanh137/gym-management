@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Search, Plus, ChevronRight, X } from 'lucide-react';
 import api from '../api/client';
 
 const statusBadge = {
-  active: <span className="badge badge-green">● Active</span>,
-  expired: <span className="badge badge-red">Hết hạn</span>,
+  active:    <span className="badge badge-green">Active</span>,
+  expired:   <span className="badge badge-red">Hết hạn</span>,
   cancelled: <span className="badge badge-gray">Đã hủy</span>,
 };
+
+const avatarColors = ['#f05a28','#00d4ff','#22c55e','#a78bfa','#f59e0b','#ef4444'];
+const getAvatarColor = (id) => avatarColors[id % avatarColors.length];
+const getInitials = (name) => name?.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase() || '?';
 
 export default function Members() {
   const qc = useQueryClient();
@@ -22,14 +27,13 @@ export default function Members() {
     queryFn: () => api.get(`/members${search ? `?search=${search}` : ''}`).then(r => r.data),
   });
 
-  const { data: packages = [] } = useQuery({
-    queryKey: ['packages'],
-    queryFn: () => api.get('/packages').then(r => r.data),
-  });
-
   const createMember = useMutation({
     mutationFn: (data) => api.post('/members', data),
-    onSuccess: () => { qc.invalidateQueries(['members']); setShowModal(false); setForm({ name:'',email:'',password:'',phone:'',dob:'',occupation:'' }); },
+    onSuccess: () => {
+      qc.invalidateQueries(['members']);
+      setShowModal(false);
+      setForm({ name:'', email:'', password:'', phone:'', dob:'', occupation:'' });
+    },
     onError: (e) => setFormError(e.response?.data?.error || 'Lỗi tạo hội viên'),
   });
 
@@ -39,11 +43,6 @@ export default function Members() {
     if (!form.password || form.password.length < 6) { setFormError('Mật khẩu tối thiểu 6 ký tự'); return; }
     createMember.mutate(form);
   };
-
-  const getActiveSub = (member) => member.subscriptions?.[0];
-  const getAvatar = (name) => name?.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase() || '?';
-  const avatarColors = ['#f05a28','#00d4ff','#22c55e','#a78bfa','#f59e0b','#ef4444'];
-  const getAvatarColor = (id) => avatarColors[id % avatarColors.length];
 
   return (
     <>
@@ -60,7 +59,7 @@ export default function Members() {
             </span>
             <div className="flex gap-3">
               <div className="search-box">
-                <span className="search-icon">🔍</span>
+                <Search size={14} className="search-icon" />
                 <input
                   className="search-input"
                   placeholder="Tìm tên, email, SĐT..."
@@ -69,7 +68,7 @@ export default function Members() {
                 />
               </div>
               <button className="btn btn-primary" onClick={() => { setShowModal(true); setFormError(''); }}>
-                + Thêm hội viên
+                <Plus size={15} /> Thêm hội viên
               </button>
             </div>
           </div>
@@ -78,7 +77,7 @@ export default function Members() {
             <div className="loading-spinner"><div className="spinner" /> Đang tải...</div>
           ) : members.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">👥</div>
+              <div className="empty-state-icon" style={{ fontSize: 36, opacity: 0.3 }}>👥</div>
               <div className="empty-state-text">{search ? 'Không tìm thấy hội viên' : 'Chưa có hội viên nào'}</div>
             </div>
           ) : (
@@ -86,9 +85,9 @@ export default function Members() {
               <thead>
                 <tr>
                   <th>Hội viên</th>
-                  <th>Mã hội viên</th>
+                  <th>Mã HV</th>
                   <th>Liên hệ</th>
-                  <th>Gói tập hiện tại</th>
+                  <th>Gói tập</th>
                   <th>Trạng thái</th>
                   <th>Ngày đăng ký</th>
                   <th></th>
@@ -96,16 +95,13 @@ export default function Members() {
               </thead>
               <tbody>
                 {members.map(m => {
-                  const sub = getActiveSub(m);
+                  const sub = m.subscriptions?.[0];
                   return (
                     <tr key={m.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/members/${m.id}`)}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div
-                            className="avatar avatar-sm"
-                            style={{ background: getAvatarColor(m.id), color: 'white' }}
-                          >
-                            {getAvatar(m.user?.name)}
+                          <div className="avatar avatar-sm" style={{ background: getAvatarColor(m.id), color: 'white' }}>
+                            {getInitials(m.user?.name)}
                           </div>
                           <div>
                             <div style={{ fontWeight: 600, fontSize: 13 }}>{m.user?.name}</div>
@@ -125,13 +121,16 @@ export default function Members() {
                           <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Chưa đăng ký</span>
                         )}
                       </td>
-                      <td>{sub ? (statusBadge[sub.status] || <span className="badge badge-gray">{sub.status}</span>) : <span className="badge badge-gray">Chưa có gói</span>}</td>
+                      <td>
+                        {sub ? (statusBadge[sub.status] || <span className="badge badge-gray">{sub.status}</span>)
+                          : <span className="badge badge-gray">Chưa có gói</span>}
+                      </td>
                       <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                         {new Date(m.createdAt).toLocaleDateString('vi-VN')}
                       </td>
                       <td onClick={e => e.stopPropagation()}>
                         <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/members/${m.id}`)}>
-                          Chi tiết →
+                          <ChevronRight size={14} />
                         </button>
                       </td>
                     </tr>
@@ -143,13 +142,14 @@ export default function Members() {
         </div>
       </div>
 
-      {/* Add Member Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span className="modal-title">➕ Thêm hội viên mới</span>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}>✕</button>
+              <span className="modal-title">Thêm hội viên mới</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}>
+                <X size={16} />
+              </button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
@@ -190,7 +190,7 @@ export default function Members() {
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary" disabled={createMember.isPending}>
-                  {createMember.isPending ? 'Đang tạo...' : '✓ Tạo hội viên'}
+                  {createMember.isPending ? 'Đang tạo...' : 'Tạo hội viên'}
                 </button>
               </div>
             </form>
@@ -200,3 +200,4 @@ export default function Members() {
     </>
   );
 }
+
