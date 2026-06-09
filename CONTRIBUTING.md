@@ -11,24 +11,45 @@ git clone https://github.com/ToanKhanh137/gym-management.git
 cd gym-management
 ```
 
-### Setup Backend
+### 1️⃣ Lấy DATABASE_URL từ Neon
+
+> Nhóm dùng **Neon** (PostgreSQL trên cloud) — mọi người dùng chung 1 database.
+
+1. Hỏi nhóm trưởng lấy **connection string** của Neon (hoặc vào [neon.tech](https://neon.tech) xem dashboard)
+2. Connection string trông như này:
+   ```
+   postgresql://user:pass@ep-xxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+   ```
+
+### 2️⃣ Setup Backend
 ```bash
 cd backend
+
+# Tạo file .env từ template
 cp .env.example .env
+# → Mở .env, dán DATABASE_URL vừa lấy vào
+
+# Cài dependencies
 npm install
-npx prisma migrate dev
-node src/prisma/seed.js
+
+# Áp dụng schema lên database Neon (lần đầu)
+npx prisma migrate deploy
+
+# Chạy development server
 npm run dev
 ```
 
-### Setup Frontend (terminal mới)
+### 3️⃣ Setup Frontend (terminal mới)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Xong. Backend: `http://localhost:3001` | Frontend: `http://localhost:5173`
+Backend: `http://localhost:3001` | Frontend: `http://localhost:5173`
+
+> 📁 **Xem thêm tài liệu nhóm** trong thư mục [`docs/`](./docs/) — có tracker, phân công, log làm việc.
+
 
 ---
 
