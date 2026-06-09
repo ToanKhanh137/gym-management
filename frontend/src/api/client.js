@@ -9,11 +9,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401/403 globally
+// Handle 401/403 globally — but NOT during login or when already on /login
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
+    const isLoginEndpoint = err.config?.url?.includes('/auth/login');
+    const isAlreadyOnLogin = window.location.pathname === '/login';
+
+    if (
+      (err.response?.status === 401 || err.response?.status === 403) &&
+      !isLoginEndpoint &&
+      !isAlreadyOnLogin
+    ) {
       localStorage.removeItem('gym_token');
       localStorage.removeItem('gym_user');
       window.location.href = '/login';

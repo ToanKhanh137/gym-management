@@ -4,11 +4,26 @@ import { authenticate, authorize } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-// GET /api/feedbacks
+// GET /api/feedbacks — owner/staff view all
 router.get('/', authenticate, authorize('owner', 'staff'), async (req, res) => {
   try {
     const feedbacks = await prisma.feedback.findMany({
       include: { member: { include: { user: { select: { name: true } } } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(feedbacks);
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/feedbacks/mine — member views own feedbacks
+router.get('/mine', authenticate, authorize('member'), async (req, res) => {
+  try {
+    const member = await prisma.member.findUnique({ where: { userId: req.user.id } });
+    if (!member) return res.json([]);
+    const feedbacks = await prisma.feedback.findMany({
+      where: { memberId: member.id },
       orderBy: { createdAt: 'desc' },
     });
     res.json(feedbacks);

@@ -71,26 +71,45 @@
 
 ### Tổng kết ngày 09/06
 - ✅ Đã làm: Toàn bộ backend API (11 modules, 30+ endpoints), DB Neon PostgreSQL live, seed data, repo GitHub, docs hệ thống
-- ✅ Đã làm: Frontend 9 trang chính, dark theme, lucide-react icons nhất quán
+- ✅ Đã làm: Frontend 9 trang (dashboard/members/packages/checkin/equipment/reports/profile/memberDetail) + dark theme + lucide-react
 - ✅ Đã làm: Responsive layout — desktop sidebar + mobile bottom nav + hamburger
 - ✅ Đã làm: Sửa README phản ánh đúng Neon PostgreSQL
-- ⬜ Chưa làm: Rooms, Users, Feedbacks, Subscriptions pages; unit test; phân công thành viên
-- 🔜 Ngày mai cần: Hoàn thiện các trang còn lại, test end-to-end
+- ✅ Đã làm: 7 trang còn lại: Rooms, Users, Feedbacks, Subscriptions, MySubscription, MyTraining, MemberFeedback
+- ✅ Đã làm: Bổ sung backend (training-log member filter, subscription member filter, feedbacks/mine endpoint)
+- ✅ Đã làm: Cập nhật DOC_NOTES + WORK_LOG
+- 🔜 Ngày mai cần: Test end-to-end, phân công viết tài liệu chính thức (RA/AD/DD/GD/UT)
 
 ---
 
 ## 10/06/2026 (Ngày 2 — Còn 4 ngày)
 
 ### Buổi sáng
-- _(nhóm ghi vào đây)_
+- `[09:00]` Khánh — Code 7 trang frontend còn thiếu:
+  - `/rooms` — Quản lý phòng tập (CRUD, status badge, thiết bị count)
+  - `/users` — Nhân sự (filter role, toggle isActive, add/edit modal)
+  - `/feedbacks` — Tổng hợp đánh giá (KPI cards + star rating table)
+  - `/subscriptions` — Đăng ký gói tập (CRUD + cancel + search/filter)
+  - `/my-subscription` — Member xem gói tập (hero card + cảnh báo hết hạn)
+  - `/my-training` — Member xem lịch sử tập (KPI + bảng check-in/out)
+  - `/feedback` — Member gửi đánh giá (interactive star picker + lịch sử)
+- `[09:30]` Khánh — Cập nhật App.jsx đăng ký toàn bộ routes mới
+- `[09:35]` Khánh — Bổ sung backend:
+  - `GET /api/training-logs`: member tự động filter theo memberId của mình
+  - `GET /api/subscriptions`: member tự động filter theo memberId
+  - `GET /api/feedbacks/mine`: endpoint mới cho member xem phản hồi đã gửi
+  - `GET /api/training-logs`: include subscription.package để hiển thị tên gói tập
+- `[09:45]` Khánh — Cập nhật DOC_NOTES.md (UC-07 → UC-13, UI table 100% xong)
+- `[09:50]` Khánh — Fix lỗi demo login: interceptor 401 không reload trang khi đang ở /login
+- `[09:55]` Khánh — Cập nhật WORK_LOG.md
 
 ### Buổi chiều
 - _(nhóm ghi vào đây)_
 
 ### Tổng kết ngày 10/06
-- ✅ Đã làm:
-- ⬜ Chưa làm:
-- 🔜 Ngày mai cần:
+- ✅ Đã làm: Hoàn chỉnh 100% các trang frontend (16/16 màn hình)
+- ✅ Đã làm: Bổ sung 3 backend endpoints/fixes cho member self-service
+- ⬜ Chưa làm: Viết tài liệu chính thức (RA, AD, DD, GD, PP), unit test
+- 🔜 Ngày mai cần: Bắt đầu viết tài liệu, test end-to-end toàn hệ thống
 
 ---
 

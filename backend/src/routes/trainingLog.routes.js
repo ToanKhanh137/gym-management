@@ -55,15 +55,24 @@ router.patch('/:id/checkout', authenticate, authorize('owner', 'staff', 'pt'), a
 // GET /api/training-logs?memberId=
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { memberId } = req.query;
+    let { memberId } = req.query;
+
+    // If member role, only return their own logs
+    if (req.user.role === 'member') {
+      const member = await prisma.member.findUnique({ where: { userId: req.user.id } });
+      if (!member) return res.json([]);
+      memberId = member.id;
+    }
+
     const logs = await prisma.trainingLog.findMany({
       where: memberId ? { memberId: parseInt(memberId) } : {},
       include: {
         member: { include: { user: { select: { name: true } } } },
         recordedBy: { select: { name: true } },
+        subscription: { include: { package: { select: { name: true } } } },
       },
       orderBy: { checkedInAt: 'desc' },
-      take: 50,
+      take: 100,
     });
     res.json(logs);
   } catch {

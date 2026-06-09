@@ -68,24 +68,55 @@
 
 ### UC-07: Quản lý nhân sự / PT
 - Actor chính: Chủ phòng tập
-- Luồng chính: Tạo tài khoản staff/pt, gán role, xết duyệt
-- API: GET/POST/PATCH `/api/users` (chỉ owner)
-- UI: Trang `/users` — chưa làm
+- Luồng chính:
+  1. Xem danh sách staff/pt/owner — GET `/api/users`
+  2. Tạo tài khoản mới (gán role staff/pt/owner) — POST `/api/users`
+  3. Chỉnh sửa tên, SĐT — PATCH `/api/users/:id`
+  4. Vô hiệu hóa / kích hoạt (`isActive` toggle) — PATCH `/api/users/:id`
+- Phân quyền: Chỉ `owner` mới truy cập được
+- UI: Trang `/users` — bảng có filter theo role, badge màu theo vai trò, toggle active ✅
 
 ### UC-08: Xem báo cáo thống kê doanh thu
 - Actor chính: Chủ phòng tập
 - Luồng chính: Chọn khoảng ngày, GET `/api/reports/revenue` → hiển thị tổng, phân bổ theo gói
-- UI: Trang `/reports` — KPI cards + bar chart + filter ngày
+- UI: Trang `/reports` — KPI cards + bar chart + filter ngày ✅
 
 ### UC-09: Gửi phản hồi / đánh giá dịch vụ
 - Actor chính: Hội viên
-- API: POST `/api/feedbacks`
-- UI: Trang `/feedback` — chưa làm
+- Luồng chính:
+  1. Hội viên chọn loại đánh giá (staff/pt/facility), chọn sao (1-5), nhập comment
+  2. POST `/api/feedbacks` → lưu DB
+  3. Xem lịch sử phản hồi đã gửi — GET `/api/feedbacks/mine`
+- Exception: Chưa chọn số sao → báo lỗi
+- UI: Trang `/feedback` — interactive star picker với hover effect ✅
 
-### UC-10: Quản lý tài khoản người dùng
-- Actor chính: Chủ phòng tập / Admin
-- API: PATCH `/api/auth/change-password`
-- UI: Trang `/users` — chưa làm
+### UC-10: Xem & Quản lý Phòng tập
+- Actor chính: Chủ phòng tập / Nhân viên
+- Luồng chính:
+  1. Xem danh sách phòng với số thiết bị — GET `/api/rooms`
+  2. Thêm phòng mới (mã, tên, loại, sức chứa) — POST `/api/rooms`
+  3. Chỉnh sửa / đổi trạng thái phòng — PATCH `/api/rooms/:id`
+- UI: Trang `/rooms` — card grid + status badge + modal ✅
+
+### UC-11: Quản lý tất cả Đăng ký gói tập (Subscriptions)
+- Actor chính: Chủ phòng tập / Nhân viên
+- Luồng chính:
+  1. Xem tất cả gói đăng ký, filter theo status/tên — GET `/api/subscriptions`
+  2. Tạo mới: chọn hội viên + gói + ngày + PTTT — POST `/api/subscriptions`
+  3. Hủy gói — PATCH `/api/subscriptions/:id/cancel`
+- UI: Trang `/subscriptions` — bảng + search + modal ✅
+
+### UC-12: Hội viên xem Gói tập & Lịch sử tập của mình
+- Actor chính: Hội viên
+- Luồng chính:
+  - Gói tập: GET `/api/subscriptions` (auto-filter theo memberId) → hero card + cảnh báo sắp hết hạn
+  - Lịch sử tập: GET `/api/training-logs` (auto-filter theo memberId) → bảng check-in/out + KPI
+- UI: `/my-subscription` + `/my-training` ✅
+
+### UC-13: Xem tổng hợp Phản hồi (Owner/Staff)
+- Actor chính: Chủ phòng tập / Nhân viên
+- Luồng chính: GET `/api/feedbacks` → bảng + KPI cards đánh giá TB theo loại
+- UI: Trang `/feedbacks` — KPI row + star display ✅
 
 ---
 
@@ -253,12 +284,13 @@
 | Thiết bị | `/equipment` | Owner, Staff | ✅ Xong |
 | Báo cáo doanh thu | `/reports` | Owner | ✅ Xong |
 | Hồ sơ Hội viên | `/profile` | Member | ✅ Xong |
-| Đăng ký / Gia hạn | `/subscriptions` | Owner, Staff | ⬜ Chưa làm |
-| Phòng tập | `/rooms` | Owner, Staff | ⬜ Chưa làm |
-| Nhân sự | `/users` | Owner | ⬜ Chưa làm |
-| Phản hồi | `/feedbacks` | Owner, Staff | ⬜ Chưa làm |
-| Gói tập (Member) | `/my-subscription` | Member | ⬜ Chưa làm |
-| Lịch sử tập (Member) | `/my-training` | Member | ⬜ Chưa làm |
+| Đăng ký / Gia hạn | `/subscriptions` | Owner, Staff | ✅ Xong |
+| Phòng tập | `/rooms` | Owner, Staff | ✅ Xong |
+| Nhân sự | `/users` | Owner | ✅ Xong |
+| Phản hồi (quản lý) | `/feedbacks` | Owner, Staff | ✅ Xong |
+| Gói tập (Member) | `/my-subscription` | Member | ✅ Xong |
+| Lịch sử tập (Member) | `/my-training` | Member | ✅ Xong |
+| Gửi Phản hồi (Member) | `/feedback` | Member | ✅ Xong |
 
 ---
 

@@ -5,9 +5,19 @@ import { authenticate, authorize } from '../middleware/auth.middleware.js';
 const router = express.Router();
 
 // GET /api/subscriptions?memberId=
-router.get('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
   try {
-    const { memberId, status } = req.query;
+    let { memberId, status } = req.query;
+
+    // Members can only see their own subscriptions
+    if (req.user.role === 'member') {
+      const member = await prisma.member.findUnique({ where: { userId: req.user.id } });
+      if (!member) return res.json([]);
+      memberId = member.id;
+    } else if (!['owner', 'staff', 'pt'].includes(req.user.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const subscriptions = await prisma.subscription.findMany({
       where: {
         ...(memberId && { memberId: parseInt(memberId) }),

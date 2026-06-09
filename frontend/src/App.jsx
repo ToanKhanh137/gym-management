@@ -13,6 +13,13 @@ import CheckIn from './pages/CheckIn';
 import Equipment from './pages/Equipment';
 import Reports from './pages/Reports';
 import MemberProfile from './pages/MemberProfile';
+import Rooms from './pages/Rooms';
+import Users from './pages/Users';
+import Feedbacks from './pages/Feedbacks';
+import Subscriptions from './pages/Subscriptions';
+import MySubscription from './pages/MySubscription';
+import MyTraining from './pages/MyTraining';
+import MemberFeedback from './pages/MemberFeedback';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } });
 
@@ -65,11 +72,46 @@ function AppRoutes() {
           <Layout><Reports /></Layout>
         </ProtectedRoute>
       } />
+      <Route path="/rooms" element={
+        <ProtectedRoute roles={['owner', 'staff']}>
+          <Layout><Rooms /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/users" element={
+        <ProtectedRoute roles={['owner']}>
+          <Layout><Users /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/feedbacks" element={
+        <ProtectedRoute roles={['owner', 'staff']}>
+          <Layout><Feedbacks /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/subscriptions" element={
+        <ProtectedRoute roles={['owner', 'staff']}>
+          <Layout><Subscriptions /></Layout>
+        </ProtectedRoute>
+      } />
 
       {/* Member routes */}
       <Route path="/profile" element={
         <ProtectedRoute roles={['member']}>
           <Layout><MemberProfile /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/my-subscription" element={
+        <ProtectedRoute roles={['member']}>
+          <Layout><MySubscription /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/my-training" element={
+        <ProtectedRoute roles={['member']}>
+          <Layout><MyTraining /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/feedback" element={
+        <ProtectedRoute roles={['member']}>
+          <Layout><MemberFeedback /></Layout>
         </ProtectedRoute>
       } />
 

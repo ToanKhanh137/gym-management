@@ -26,6 +26,7 @@ export default function Login() {
     }
   };
 
+  // Chỉ điền form, người dùng tự bấm "Đăng nhập"
   const quickLogin = (email, password) => setForm({ email, password });
 
   return (
