@@ -12,22 +12,37 @@
 
 - `[09:00]` _(AI Agent)_ — Đọc và phân tích đề bài từ PDF + DOCX
 - `[09:05]` _(AI Agent)_ — Convert PDF → `Topics-ITSS-20252.md`, DOCX → `Huong-dan-bai-tap-nhom.md`
-- `[09:06]` _(AI Agent)_ — Tạo `PROJECT_TRACKER.md` (danh sách việc cần làm đầy đủ)
-- `[09:09]` _(AI Agent)_ — Tạo `DOC_NOTES.md` (ghi chú tài liệu trong lúc code) và `WORK_LOG.md` (file này)
-- **Quyết định:** Chiến lược **code-first** → ghi note vào `DOC_NOTES.md` → format tài liệu sau
-
-### Buổi chiều
-
-- _(nhóm ghi vào đây)_
-
-### Buổi tối
-
-- _(nhóm ghi vào đây)_
+- `[09:06]` _(AI Agent)_ — Tạo `PROJECT_TRACKER.md`, `DOC_NOTES.md`, `WORK_LOG.md`
+- `[09:13]` _(Nhóm + AI)_ — Quyết định chủ đề Gym (Chủ đề 02), chiến lược code-first
+- `[09:14]` _(AI Agent)_ — Chọn tech stack: Node.js + Express + Prisma + PostgreSQL + React + Vite
+- `[09:15]` _(AI Agent)_ — Tạo cấu trúc thư mục `gym-management/backend/` và `frontend/`
+- `[09:16]` _(AI Agent)_ — Tạo `package.json`, `.env`, `.env.example` cho backend
+- `[09:16]` _(AI Agent)_ — Tạo Prisma schema đầy đủ (10 models: User, Member, Trainer, MembershipPackage, Subscription, Room, Equipment, MaintenanceRequest, TrainingLog, Feedback)
+- `[09:17]` _(AI Agent)_ — Tạo `src/index.js` (Express app, 11 routes)
+- `[09:17]` _(AI Agent)_ — Tạo `auth.middleware.js` (JWT authenticate + authorize theo role)
+- `[09:17]` _(AI Agent)_ — Tạo toàn bộ 11 route files: auth, user, member, package, subscription, room, equipment, trainingLog, feedback, maintenance, report
+- `[09:19]` _(AI Agent)_ — Tạo `seed.js` với 4 tài khoản test (owner/staff/pt/member) + dữ liệu mẫu
+- `[09:20]` _(AI Agent)_ — `npm install` backend, `prisma migrate dev` (SQLite), seed DB
+- `[09:20]` _(AI Agent)_ — Setup frontend: `create-vite` React, cài axios + react-router-dom + tanstack-query
+- `[09:24]` _(AI Agent)_ — Tạo `README.md` đầy đủ (tech stack, setup, API endpoints, folder structure)
+- `[09:25]` _(AI Agent)_ — Tạo `.gitignore` 3 cấp (root, backend, frontend)
+- `[09:26]` _(AI Agent)_ — `git init`, add remote, commit đầu tiên, push lên GitHub
+- `[09:28]` _(AI Agent)_ — Tạo `CONTRIBUTING.md` (hướng dẫn cho team)
+- `[09:29]` _(AI Agent)_ — Gom tài liệu vào `docs/` trong repo
+- `[09:32]` _(Nhóm + AI)_ — Đánh giá DB: chọn **Neon** thay SQLite (PostgreSQL cloud, free, không pause)
+- `[09:34]` _(AI Agent)_ — Đổi Prisma provider từ `sqlite` → `postgresql`, cập nhật `.env.example`
+- `[09:39]` _(Nhóm)_ — Tạo Neon project, cung cấp connection string
+- `[09:39]` _(AI Agent)_ — Cập nhật `.env` với Neon URL, xóa SQLite migrations, tạo PostgreSQL migration mới
+- `[09:40]` _(AI Agent)_ — Seed Neon DB thành công, test login API trả JWT token OK
+- `[09:43]` _(AI Agent)_ — Xóa thư mục `docs/` ngoài repo (đã move vào trong repo)
+- `[09:47]` _(AI Agent)_ — Cập nhật `CONTRIBUTING.md`: thêm JWT_SECRET note, workflow, hướng dẫn ghi docs
+- `[09:54]` _(AI Agent)_ — Cập nhật `WORK_LOG.md` và `DOC_NOTES.md` (file này)
 
 ### Tổng kết ngày 09/06
-- ✅ Đã làm: Setup môi trường, tạo file hệ thống tracker
-- ⬜ Chưa làm: Tạo repo GitHub, setup project code, phân công
-- 🔜 Ngày mai cần: Bắt đầu code module Auth + Database schema
+- ✅ Đã làm: Toàn bộ backend API (11 modules, 30+ endpoints), DB Neon PostgreSQL live, seed data, repo GitHub, docs hệ thống
+- ✅ Đã làm: Frontend scaffold (React + Vite), chưa có UI
+- ⬜ Chưa làm: UI frontend, unit test, phân công thành viên
+- 🔜 Ngày mai cần: Code UI frontend (Login → Dashboard → quản lý Hội viên)
 
 ---
 

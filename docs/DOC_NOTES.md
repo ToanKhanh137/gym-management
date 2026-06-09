@@ -182,11 +182,13 @@
 ## 🏗️ KIẾN TRÚC HỆ THỐNG
 > Dùng cho: Architectural Design (AD)
 
-- **Pattern:** _(ghi khi quyết định — MVC / Layered / Clean Architecture)_
-- **Frontend:** _(ghi khi chọn)_
-- **Backend:** _(ghi khi chọn)_
-- **DB:** _(ghi khi chọn)_
-- **Auth:** JWT / Session — _(ghi khi chọn)_
+- **Pattern:** Layered Architecture (Routes → Middleware → Prisma ORM → DB)
+- **Frontend:** React 19 + Vite 8 + React Router DOM 7 + TanStack Query 5
+- **Backend:** Node.js 24 + Express 4 (ES Modules)
+- **DB:** PostgreSQL (Neon cloud) qua Prisma ORM 5
+- **Auth:** JWT (jsonwebtoken) + bcryptjs, expire 24h, Bearer token
+- **Phân quyền:** Role-based — 4 roles: `owner`, `staff`, `pt`, `member`
+- **Cấu trúc:** Monorepo — `/backend` (port 3001) + `/frontend` (port 5173)
 
 ---
 
@@ -195,17 +197,20 @@
 
 | Pattern | Nơi áp dụng | Lý do |
 |---|---|---|
-| _(ghi khi dùng)_ | | |
+| **Singleton** | `src/prisma/client.js` — export 1 PrismaClient instance | Tránh tạo nhiều DB connection |
+| **Middleware Chain** | `auth.middleware.js` → authenticate → authorize | Tách biệt xác thực và phân quyền |
+| **Repository (qua Prisma)** | Tất cả routes dùng `prisma.model.findMany/create/update` | Abstraction layer cho DB |
 
 ---
 
 ## 🔒 PHI CHỨC NĂNG (Non-functional Requirements)
 > Dùng cho: SRS
 
-- **Bảo mật:** Mật khẩu hash bcrypt, JWT expire 24h, phân quyền theo role
-- **Hiệu năng:** _(ghi thêm)_
-- **Khả dụng:** _(ghi thêm)_
-- **Khả năng mở rộng:** _(ghi thêm)_
+- **Bảo mật:** Mật khẩu hash bcrypt (salt=10), JWT expire 24h, phân quyền RBAC theo 4 role
+- **Hiệu năng:** Neon PostgreSQL cloud (Singapore region), Prisma connection pooling
+- **Khả dụng:** Backend chạy local, DB cloud Neon (uptime ~99.9%)
+- **Khả năng mở rộng:** Cấu trúc route tách module, dễ thêm feature mới
+- **Tính nhất quán dữ liệu:** Dùng `prisma.$transaction()` cho các thao tác multi-step (check-in, bảo trì)
 
 ---
 
