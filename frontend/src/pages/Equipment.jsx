@@ -1,19 +1,24 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Plus, Wrench, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Plus, Wrench, CheckCircle, Pencil } from 'lucide-react';
 import api from '../api/client';
 
-const statusColor = { good: 'badge-green', maintenance: 'badge-yellow', broken: 'badge-red', retired: 'badge-gray' };
-const statusLabel = { good: '✅ Tốt', maintenance: '🔧 Bảo trì', broken: '❌ Hỏng', retired: '📦 Ngừng dùng' };
+const statusColor = { good: 'badge-green', maintenance: 'badge-yellow', damaged: 'badge-red', retired: 'badge-gray' };
+const statusLabel = { good: '✅ Tốt', maintenance: '🔧 Bảo trì', damaged: '❌ Hỏng', retired: '📦 Ngừng dùng' };
+
+const emptyForm = { equipmentCode: '', name: '', roomId: '', quantity: 1, importedAt: '', warrantyUntil: '', origin: '' };
 
 export default function Equipment() {
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [showMaintModal, setShowMaintModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
   const [maintEq, setMaintEq] = useState(null);
   const [maintDesc, setMaintDesc] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [form, setForm] = useState({ equipmentCode: '', name: '', roomId: '', quantity: 1, importedAt: '', warrantyUntil: '', origin: '' });
+  const [form, setForm] = useState(emptyForm);
+  const [editForm, setEditForm] = useState({ name: '', roomId: '', quantity: 1, importedAt: '', warrantyUntil: '', origin: '', status: 'good' });
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', filterStatus],
@@ -32,7 +37,12 @@ export default function Equipment() {
 
   const createEq = useMutation({
     mutationFn: (data) => api.post('/equipment', data),
-    onSuccess: () => { qc.invalidateQueries(['equipment']); setShowModal(false); setForm({ equipmentCode: '', name: '', roomId: '', quantity: 1, importedAt: '', warrantyUntil: '', origin: '' }); },
+    onSuccess: () => { qc.invalidateQueries(['equipment']); setShowModal(false); setForm(emptyForm); },
+  });
+
+  const updateEq = useMutation({
+    mutationFn: ({ id, data }) => api.patch(`/equipment/${id}`, data),
+    onSuccess: () => { qc.invalidateQueries(['equipment']); setShowEditModal(false); setEditTarget(null); },
   });
 
   const reportMaint = useMutation({
@@ -44,6 +54,20 @@ export default function Equipment() {
     mutationFn: (id) => api.patch(`/maintenance/${id}/resolve`),
     onSuccess: () => qc.invalidateQueries(['equipment', 'maintenance']),
   });
+
+  const openEdit = (eq) => {
+    setEditTarget(eq);
+    setEditForm({
+      name: eq.name || '',
+      roomId: eq.roomId ? String(eq.roomId) : '',
+      quantity: eq.quantity || 1,
+      importedAt: eq.importedAt || '',
+      warrantyUntil: eq.warrantyUntil || '',
+      origin: eq.origin || '',
+      status: eq.status || 'good',
+    });
+    setShowEditModal(true);
+  };
 
   const pending = maintenance.filter(m => m.status !== 'resolved');
 
@@ -98,11 +122,21 @@ export default function Equipment() {
                     <td style={{ fontSize: 12 }}>{eq.warrantyUntil || '—'}</td>
                     <td><span className={`badge ${statusColor[eq.status]}`}>{statusLabel[eq.status]}</span></td>
                     <td>
-                      {eq.status === 'good' && (
-                        <button className="btn btn-ghost btn-sm" onClick={() => { setMaintEq(eq); setShowMaintModal(true); }}>
-                          🔧 Báo hỏng
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          title="Sửa thông tin"
+                          onClick={() => openEdit(eq)}
+                          style={{ padding: '4px 8px' }}
+                        >
+                          ✏️ Sửa
                         </button>
-                      )}
+                        {eq.status === 'good' && (
+                          <button className="btn btn-ghost btn-sm" onClick={() => { setMaintEq(eq); setShowMaintModal(true); }}>
+                            🔧 Báo hỏng
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -190,6 +224,87 @@ export default function Equipment() {
                 {reportMaint.isPending ? 'Đang gửi...' : '✓ Gửi báo cáo'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Equipment Modal */}
+      {showEditModal && editTarget && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">✏️ Sửa thiết bị — {editTarget.equipmentCode}</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowEditModal(false)}>✕</button>
+            </div>
+            <form onSubmit={e => {
+              e.preventDefault();
+              updateEq.mutate({
+                id: editTarget.id,
+                data: {
+                  name: editForm.name,
+                  roomId: editForm.roomId ? parseInt(editForm.roomId) : null,
+                  quantity: parseInt(editForm.quantity),
+                  importedAt: editForm.importedAt || null,
+                  warrantyUntil: editForm.warrantyUntil || null,
+                  origin: editForm.origin || null,
+                  status: editForm.status,
+                },
+              });
+            }}>
+              <div className="modal-body">
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label className="form-label">Tên thiết bị *</label>
+                    <input className="form-input" required value={editForm.name}
+                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Phòng</label>
+                    <select className="form-select" value={editForm.roomId}
+                      onChange={e => setEditForm(f => ({ ...f, roomId: e.target.value }))}>
+                      <option value="">-- Không gán phòng --</option>
+                      {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Số lượng</label>
+                    <input className="form-input" type="number" min="1" value={editForm.quantity}
+                      onChange={e => setEditForm(f => ({ ...f, quantity: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Trạng thái</label>
+                    <select className="form-select" value={editForm.status}
+                      onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}>
+                      <option value="good">✅ Tốt</option>
+                      <option value="maintenance">🔧 Bảo trì</option>
+                      <option value="damaged">❌ Hỏng</option>
+                      <option value="retired">📦 Ngừng dùng</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Ngày nhập</label>
+                    <input className="form-input" type="date" value={editForm.importedAt}
+                      onChange={e => setEditForm(f => ({ ...f, importedAt: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Bảo hành đến</label>
+                    <input className="form-input" type="date" value={editForm.warrantyUntil}
+                      onChange={e => setEditForm(f => ({ ...f, warrantyUntil: e.target.value }))} />
+                  </div>
+                  <div className="form-group" style={{ gridColumn: '1/-1' }}>
+                    <label className="form-label">Xuất xứ</label>
+                    <input className="form-input" placeholder="Việt Nam, Mỹ..." value={editForm.origin}
+                      onChange={e => setEditForm(f => ({ ...f, origin: e.target.value }))} />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-ghost" onClick={() => setShowEditModal(false)}>Hủy</button>
+                <button type="submit" className="btn btn-primary" disabled={updateEq.isPending}>
+                  {updateEq.isPending ? 'Đang lưu...' : '✓ Lưu thay đổi'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

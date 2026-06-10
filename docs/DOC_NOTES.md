@@ -9,10 +9,10 @@
 ## 🗂️ ACTORS (Đối tượng sử dụng)
 > Dùng cho: Use Case Diagram, SRS
 
-- **Chủ phòng tập** (Owner/Admin): quản lý tổng thể, xem báo cáo doanh thu
-- **Nhân viên quản lý** (Staff): quản lý hội viên hàng ngày, đăng ký/gia hạn gói
-- **Huấn luyện viên cá nhân** (PT): quản lý học viên, ghi nhận buổi tập
-- **Hội viên** (Member): tự tra gói tập, lịch sử, gia hạn online
+- **Chủ phòng tập** (Owner/Admin): quản lý tổng thể hệ thống — quản lý gói tập, nhân sự (staff/pt), phòng tập, thiết bị, xem báo cáo doanh thu, xem phản hồi hội viên
+- **Nhân viên quản lý** (Staff): vận hành hàng ngày — đăng ký/gia hạn gói cho hội viên, check-in/checkout, xem phòng, thiết bị, xem phản hồi hội viên
+- **Huấn luyện viên cá nhân** (PT): hỗ trợ tập luyện — xem danh sách hội viên, thực hiện check-in/checkout buổi tập
+- **Hội viên** (Member): tự tra thông tin — xem gói tập đang có, xem lịch sử tập luyện, gửi phản hồi/đánh giá dịch vụ
 
 ---
 
@@ -20,14 +20,14 @@
 > Dùng cho: Use Case Diagram + Đặc tả Use Case (RA)
 
 ### UC-01: Đăng ký hội viên mới
-- Actor chính: Nhân viên quản lý
-- Actor phụ: Hội viên
+- Actor chính: Nhân viên quản lý / Chủ phòng tập
 - Luồng chính:
-  1. NV nhập thông tin (tên, email, mật khẩu, SĐT, ngày sinh, nghề nghiệp)
+  1. Actor nhập thông tin hội viên (tên, email, mật khẩu, SĐT, ngày sinh, nghề nghiệp)
   2. POST `/api/members` → backend tạo User + Member, sinh `memberCode` tự động (`MEM` + 3 số)
   3. Trả về memberCode, redirect sang trang chi tiết hội viên
 - Exception: Email đã tồn tại → lỗi 409; Mật khẩu < 6 ký tự → báo lỗi trước khi gửi
 - UI: Modal form trong trang `/members`, validation phía client trước khi gửi
+- Ghi chú: Hội viên **không** tự đăng ký — tài khoản được tạo bởi Staff/Owner
 
 ### UC-02: Đăng nhập hệ thống
 - Actor: Tất cả
@@ -40,17 +40,24 @@
 
 ### UC-03: Quản lý gói tập (CRUD)
 - Actor chính: Chủ phòng tập
-- Luồng chính: Xem danh sách gói (card grid), tạo/sửa qua modal, tắt gói (soft-delete `isActive=false`)
+- Actor phụ (chỉ xem): Nhân viên, PT, Hội viên
+- Luồng chính:
+  1. Xem danh sách gói tập (card grid) — tất cả role đều xem được
+  2. Tạo gói mới (tên, loại, giá, số ngày, mô tả) — POST `/api/packages` — chỉ Owner
+  3. Chỉnh sửa thông tin gói — PATCH `/api/packages/:id` — chỉ Owner
+  4. Tắt gói (soft-delete `isActive=false`) — DELETE `/api/packages/:id` — chỉ Owner
+- Exception: Không thể xóa gói đang có hội viên sử dụng (có subscription active)
 - API: GET/POST/PATCH/DELETE `/api/packages`
-- UI: Trang `/packages` hiển thị card grid, chỉ chủ phòng tập thấy nút sửa/tắt
+- UI: Trang `/packages` — card grid, chỉ Owner thấy nút Tạo/Sửa/Tắt
 
 ### UC-04: Đăng ký / Gia hạn gói tập cho hội viên
-- Actor chính: Nhân viên
+- Actor chính: Nhân viên / Chủ phòng tập
 - Luồng chính:
   1. Vào trang chi tiết hội viên `/members/:id`
   2. Chọn gói tập, ngày bắt đầu, phương thức thanh toán
   3. POST `/api/subscriptions` → tạo subscription, tính `endDate` tự động
 - Exception: Hội viên đã có gói active → cần hủy trước
+- Ghi chú: UC-04 là entry point từ trang hội viên cụ thể; UC-11 là entry point từ trang quản lý tổng hợp — cùng gọi `POST /api/subscriptions`
 
 ### UC-05: Ghi nhận lịch sử tập luyện (Check-in)
 - Actor chính: Nhân viên / PT
@@ -63,8 +70,14 @@
 
 ### UC-06: Quản lý thiết bị phòng tập
 - Actor chính: Nhân viên / Chủ phòng tập
-- Luồng chính: Thêm thiết bị mới, báo hỏng → tạo MaintenanceRequest, xác nhận đã sửa → status → `resolved`
-- UI: Trang `/equipment` — hiển thị alert nếu có yêu cầu bảo trì đang chờ
+- Luồng chính:
+  1. Xem danh sách thiết bị theo phòng — GET `/api/equipment`
+  2. Thêm thiết bị mới (mã, tên, phòng, số lượng, ngày nhập, bảo hành, xuất xứ) — POST `/api/equipment`
+  3. Cập nhật trạng thái thiết bị (`good` / `damaged` / `maintenance` / `retired`) — PATCH `/api/equipment/:id`
+  4. Báo hỏng → tạo MaintenanceRequest (`status=pending`) — POST `/api/maintenance`
+  5. Kỹ thuật viên xử lý xong → xác nhận `resolved` — PATCH `/api/maintenance/:id`
+- Exception: Thiết bị đang có MaintenanceRequest `pending/in_progress` → không thể báo hỏng thêm lần nữa
+- UI: Trang `/equipment` — bảng thiết bị + badge trạng thái + alert đỏ nếu có yêu cầu bảo trì đang chờ
 
 ### UC-07: Quản lý nhân sự / PT
 - Actor chính: Chủ phòng tập
@@ -74,12 +87,12 @@
   3. Chỉnh sửa tên, SĐT — PATCH `/api/users/:id`
   4. Vô hiệu hóa / kích hoạt (`isActive` toggle) — PATCH `/api/users/:id`
 - Phân quyền: Chỉ `owner` mới truy cập được
-- UI: Trang `/users` — bảng có filter theo role, badge màu theo vai trò, toggle active ✅
+- UI: Trang `/users` — bảng có filter theo role, badge màu theo vai trò, toggle active 
 
 ### UC-08: Xem báo cáo thống kê doanh thu
 - Actor chính: Chủ phòng tập
 - Luồng chính: Chọn khoảng ngày, GET `/api/reports/revenue` → hiển thị tổng, phân bổ theo gói
-- UI: Trang `/reports` — KPI cards + bar chart + filter ngày ✅
+- UI: Trang `/reports` — KPI cards + bar chart + filter ngày 
 
 ### UC-09: Gửi phản hồi / đánh giá dịch vụ
 - Actor chính: Hội viên
@@ -88,7 +101,7 @@
   2. POST `/api/feedbacks` → lưu DB
   3. Xem lịch sử phản hồi đã gửi — GET `/api/feedbacks/mine`
 - Exception: Chưa chọn số sao → báo lỗi
-- UI: Trang `/feedback` — interactive star picker với hover effect ✅
+- UI: Trang `/feedback` — interactive star picker với hover effect 
 
 ### UC-10: Xem & Quản lý Phòng tập
 - Actor chính: Chủ phòng tập / Nhân viên
@@ -96,7 +109,7 @@
   1. Xem danh sách phòng với số thiết bị — GET `/api/rooms`
   2. Thêm phòng mới (mã, tên, loại, sức chứa) — POST `/api/rooms`
   3. Chỉnh sửa / đổi trạng thái phòng — PATCH `/api/rooms/:id`
-- UI: Trang `/rooms` — card grid + status badge + modal ✅
+- UI: Trang `/rooms` — card grid + status badge + modal 
 
 ### UC-11: Quản lý tất cả Đăng ký gói tập (Subscriptions)
 - Actor chính: Chủ phòng tập / Nhân viên
@@ -104,19 +117,38 @@
   1. Xem tất cả gói đăng ký, filter theo status/tên — GET `/api/subscriptions`
   2. Tạo mới: chọn hội viên + gói + ngày + PTTT — POST `/api/subscriptions`
   3. Hủy gói — PATCH `/api/subscriptions/:id/cancel`
-- UI: Trang `/subscriptions` — bảng + search + modal ✅
+- UI: Trang `/subscriptions` — bảng + search + modal 
 
 ### UC-12: Hội viên xem Gói tập & Lịch sử tập của mình
 - Actor chính: Hội viên
 - Luồng chính:
   - Gói tập: GET `/api/subscriptions` (auto-filter theo memberId) → hero card + cảnh báo sắp hết hạn
   - Lịch sử tập: GET `/api/training-logs` (auto-filter theo memberId) → bảng check-in/out + KPI
-- UI: `/my-subscription` + `/my-training` ✅
+- UI: `/my-subscription` + `/my-training` 
 
 ### UC-13: Xem tổng hợp Phản hồi (Owner/Staff)
 - Actor chính: Chủ phòng tập / Nhân viên
 - Luồng chính: GET `/api/feedbacks` → bảng + KPI cards đánh giá TB theo loại
-- UI: Trang `/feedbacks` — KPI row + star display ✅
+- UI: Trang `/feedbacks` — KPI row + star display 
+
+### UC-14: Đăng xuất hệ thống
+- Actor: Tất cả (Owner, Staff, PT, Member)
+- Luồng chính:
+  1. Actor nhấn nút Đăng xuất trên sidebar / bottom nav
+  2. Xóa JWT token khỏi `localStorage`
+  3. Xóa thông tin user khỏi AuthContext
+  4. Redirect về trang `/login`
+- Ghi chú: Không cần gọi API — xử lý hoàn toàn phía client
+
+### UC-15: Xem Dashboard tổng quan
+- Actor chính: Chủ phòng tập / Nhân viên / PT
+- Luồng chính:
+  1. Sau đăng nhập, redirect tự động đến `/dashboard`
+  2. GET `/api/members`, `/api/subscriptions`, `/api/training-logs`, `/api/reports/revenue` → hiển thị KPI
+  3. Hiển thị: tổng hội viên, gói active, check-in hôm nay, doanh thu tháng
+  4. Nút quick action: Thêm hội viên, Check-in, Xem báo cáo
+- Phân quyền: Member không vào được `/dashboard` — redirect sang `/profile`
+- UI: Trang `/dashboard` — KPI cards + quick actions + biểu đồ doanh thu
 
 ---
 

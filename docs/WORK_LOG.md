@@ -103,13 +103,32 @@
 - `[09:55]` Khánh — Cập nhật WORK_LOG.md
 
 ### Buổi chiều
-- _(nhóm ghi vào đây)_
+- `[12:15]` Khánh — Review DOC_NOTES.md: kiểm tra Actors và Use Cases
+  - Phát hiện lỗi: UC-01 ghi sai actor phụ (Hội viên không tự đăng ký)
+  - Phát hiện thiếu: Actor Owner/Staff/PT mô tả chưa đầy đủ quyền
+  - Phát hiện thiếu: UC-03 thiếu actor phụ xem (Staff/Member), thiếu exception
+  - Phát hiện thiếu: UC-04 thiếu Owner trong actor chính
+  - Phát hiện thiếu: UC-06 luồng quá ngắn, bổ sung 5 bước + exception
+  - Phát hiện thiếu: UC-04 và UC-11 trùng API, ghi chú rõ điểm khác
+  - Bổ sung mới: UC-14 (Đăng xuất), UC-15 (Xem Dashboard KPI)
+- `[12:20]` Khánh — Cập nhật DOC_NOTES.md: sửa Actors, sửa/bổ sung UC-01/03/04/06/11, thêm UC-14/UC-15
+- `[12:21]` Khánh — Phát hiện chức năng thiếu: UC-06 Equipment.jsx chưa có nút Sửa thiết bị (backend PATCH đã có)
+- `[12:22]` Khánh — Bổ sung `Equipment.jsx`:
+  - Thêm state `showEditModal`, `editTarget`, `editForm`
+  - Thêm mutation `updateEq` → PATCH `/api/equipment/:id`
+  - Thêm hàm `openEdit()` pre-fill form từ row hiện tại
+  - Thêm nút ✏️ Sửa trên mỗi row (kế bên nút Báo hỏng)
+  - Thêm modal Edit với đầy đủ fields: tên, phòng, số lượng, trạng thái, ngày nhập, bảo hành, xuất xứ
+  - Fix statusColor map: `broken` → `damaged` cho đúng với enum DB
+- `[12:22]` Khánh — Cập nhật WORK_LOG.md
 
 ### Tổng kết ngày 10/06
 - ✅ Đã làm: Hoàn chỉnh 100% các trang frontend (16/16 màn hình)
 - ✅ Đã làm: Bổ sung 3 backend endpoints/fixes cho member self-service
+- ✅ Đã làm: Review và sửa DOC_NOTES — Actors đầy đủ, 15 Use Cases (thêm UC-14/15), luồng chính xác
+- ✅ Đã làm: Bổ sung chức năng sửa thiết bị (UC-06 hoàn chỉnh 100%) — modal Edit + PATCH API
 - ⬜ Chưa làm: Viết tài liệu chính thức (RA, AD, DD, GD, PP), unit test
-- 🔜 Ngày mai cần: Bắt đầu viết tài liệu, test end-to-end toàn hệ thống
+- 🔜 Ngày mai cần: Bắt đầu viết tài liệu chính thức, test end-to-end toàn hệ thống
 
 ---
 
