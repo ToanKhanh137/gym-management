@@ -17,7 +17,7 @@ api.interceptors.response.use(
     const isAlreadyOnLogin = window.location.pathname === '/login';
 
     if (
-      (err.response?.status === 401 || err.response?.status === 403) &&
+      err.response?.status === 401 &&
       !isLoginEndpoint &&
       !isAlreadyOnLogin
     ) {

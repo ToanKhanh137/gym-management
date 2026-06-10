@@ -110,6 +110,7 @@ export default function Login() {
             ].map(q => (
               <button
                 key={q.email}
+                type="button"
                 onClick={() => quickLogin(q.email, q.pw)}
                 style={{
                   background: 'var(--bg-card)',
