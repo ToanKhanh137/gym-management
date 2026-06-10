@@ -13,6 +13,7 @@ import feedbackRoutes from './routes/feedback.routes.js';
 import maintenanceRoutes from './routes/maintenance.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import userRoutes from './routes/user.routes.js';
+import trainerRoutes from './routes/trainer.routes.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/api/training-logs', trainingLogRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/trainers', trainerRoutes);
 
 // 404 handler
 app.use((req, res) => {

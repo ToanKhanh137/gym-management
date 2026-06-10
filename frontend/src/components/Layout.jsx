@@ -31,9 +31,9 @@ const NAV = {
   ],
   pt: [
     { label: 'Dashboard',         icon: LayoutDashboard, to: '/dashboard' },
-    { label: 'Hội viên',          icon: Users,           to: '/members' },
+    { label: 'Học viên',          icon: Users,           to: '/trainer-students' },
+    { label: 'Lịch làm việc',     icon: Calendar,        to: '/trainer-schedule' },
     { label: 'Check-in',          icon: CheckSquare,     to: '/checkin' },
-    { label: 'Lịch tập',          icon: Calendar,        to: '/training-logs' },
   ],
   member: [
     { label: 'Hồ sơ',             icon: User,            to: '/profile' },
@@ -54,7 +54,7 @@ const ROLE_LABELS = {
 const BOTTOM_NAV = {
   owner:  ['dashboard', 'members', 'checkin', 'reports'],
   staff:  ['dashboard', 'members', 'checkin', 'equipment'],
-  pt:     ['dashboard', 'members', 'checkin', 'training-logs'],
+  pt:     ['dashboard', 'trainer-students', 'trainer-schedule', 'checkin'],
   member: ['profile', 'my-subscription', 'my-training', 'feedback'],
 };
 

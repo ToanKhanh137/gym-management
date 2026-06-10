@@ -64,4 +64,72 @@ router.get('/dashboard', authenticate, authorize('owner'), async (req, res) => {
   }
 });
 
+// GET /api/reports/performance
+router.get('/performance', authenticate, authorize('owner'), async (req, res) => {
+  try {
+    const staffAndPTs = await prisma.user.findMany({
+      where: { role: { in: ['staff', 'pt'] } },
+      select: { id: true, name: true, role: true, isActive: true },
+    });
+
+    const feedbacks = await prisma.feedback.findMany({
+      where: { targetId: { not: null } },
+      select: { targetId: true, rating: true }
+    });
+
+    // Subscriptions created by staff
+    const subsCreated = await prisma.subscription.groupBy({
+      by: ['createdById'],
+      _count: { id: true }
+    });
+    
+    // Active students for PTs
+    const activePTSubs = await prisma.subscription.groupBy({
+      by: ['trainerId'],
+      where: { status: 'active', trainerId: { not: null } },
+      _count: { id: true }
+    });
+
+    const performance = staffAndPTs.map(user => {
+      const userFeedbacks = feedbacks.filter(f => f.targetId === user.id);
+      const avgRating = userFeedbacks.length > 0 
+        ? userFeedbacks.reduce((sum, f) => sum + f.rating, 0) / userFeedbacks.length 
+        : 0;
+      
+      let handledCount = 0;
+      if (user.role === 'staff') {
+        handledCount = subsCreated.find(s => s.createdById === user.id)?._count.id || 0;
+      } else if (user.role === 'pt') {
+        // Need to find Trainer ID for this user
+        // We will fetch trainers below and map it.
+      }
+
+      return {
+        ...user,
+        feedbacksCount: userFeedbacks.length,
+        avgRating: avgRating.toFixed(1),
+        handledCount
+      };
+    });
+
+    // Map PT handled counts properly
+    const trainers = await prisma.trainer.findMany({ select: { id: true, userId: true } });
+    for (const p of performance) {
+      if (p.role === 'pt') {
+        const t = trainers.find(tr => tr.userId === p.id);
+        if (t) {
+          p.handledCount = activePTSubs.find(s => s.trainerId === t.id)?._count.id || 0;
+        }
+      }
+    }
+
+    // Sort by rating desc
+    performance.sort((a, b) => parseFloat(b.avgRating) - parseFloat(a.avgRating));
+    res.json(performance);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 export default router;

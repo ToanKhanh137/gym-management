@@ -54,8 +54,9 @@ model Trainer {
   speciality String?
   createdAt  DateTime @default(now()) @map("created_at")
 
-  user     User      @relation(fields: [userId], references: [id])
-  schedules TrainerSchedule[]
+  user          User              @relation(fields: [userId], references: [id])
+  schedules     TrainerSchedule[]
+  subscriptions Subscription[]
 
   @@map("trainers")
 }
@@ -102,10 +103,12 @@ model Subscription {
   paidAt        DateTime @map("paid_at")
   createdById   Int      @map("created_by_id")
   createdAt     DateTime @default(now()) @map("created_at")
+  trainerId     Int?     @map("trainer_id")
 
   member      Member            @relation(fields: [memberId], references: [id])
   package     MembershipPackage @relation(fields: [packageId], references: [id])
   createdBy   User              @relation("CreatedBy", fields: [createdById], references: [id])
+  trainer     Trainer?          @relation(fields: [trainerId], references: [id])
   trainingLogs TrainingLog[]
 
   @@map("subscriptions")

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ClipboardList, Plus, X, Search } from 'lucide-react';
+import { ClipboardList, Plus, X, Search, Printer } from 'lucide-react';
 import api from '../api/client';
 
 const STATUS_BADGE = {
@@ -9,7 +9,7 @@ const STATUS_BADGE = {
   cancelled: <span className="badge badge-gray">Đã hủy</span>,
 };
 const PAY_LABELS = { cash: 'Tiền mặt', bank_transfer: 'Chuyển khoản', e_wallet: 'Ví điện tử' };
-const empty = { memberId: '', packageId: '', paymentMethod: 'cash', startDate: '' };
+const empty = { memberId: '', packageId: '', paymentMethod: 'cash', startDate: '', trainerId: '' };
 
 export default function Subscriptions() {
   const qc = useQueryClient();
@@ -34,6 +34,11 @@ export default function Subscriptions() {
     queryFn: () => api.get('/packages').then(r => r.data),
   });
 
+  const { data: trainers = [] } = useQuery({
+    queryKey: ['trainers'],
+    queryFn: () => api.get('/trainers').then(r => r.data),
+  });
+
   const createSub = useMutation({
     mutationFn: (data) => api.post('/subscriptions', data),
     onSuccess: () => { qc.invalidateQueries(['subscriptions']); closeModal(); },
@@ -52,7 +57,7 @@ export default function Subscriptions() {
     e.preventDefault();
     setFormError('');
     if (!form.memberId || !form.packageId) { setFormError('Chọn hội viên và gói tập'); return; }
-    createSub.mutate({ ...form, memberId: parseInt(form.memberId), packageId: parseInt(form.packageId) });
+    createSub.mutate({ ...form, memberId: parseInt(form.memberId), packageId: parseInt(form.packageId), trainerId: form.trainerId ? parseInt(form.trainerId) : undefined });
   };
 
   const filtered = subs.filter(s => {
@@ -63,6 +68,48 @@ export default function Subscriptions() {
   });
 
   const activePackages = packages.filter(p => p.isActive);
+  const selectedPkg = activePackages.find(p => p.id === parseInt(form.packageId));
+
+  const printReceipt = (sub) => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Biên lai thanh toán</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
+            .header p { margin: 5px 0 0; color: #666; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+            .label { font-weight: bold; }
+            .total { font-size: 20px; font-weight: bold; margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; text-align: right; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Biên lai thanh toán</h1>
+            <p>GymPro Management System</p>
+          </div>
+          <div class="row"><span class="label">Mã hóa đơn:</span> <span>#INV-${sub.id.toString().padStart(6, '0')}</span></div>
+          <div class="row"><span class="label">Ngày lập:</span> <span>${new Date(sub.createdAt).toLocaleDateString('vi-VN')}</span></div>
+          <div class="row"><span class="label">Khách hàng:</span> <span>${sub.member?.user?.name}</span></div>
+          <div class="row"><span class="label">Gói tập:</span> <span>${sub.package?.name}</span></div>
+          <div class="row"><span class="label">Huấn luyện viên:</span> <span>${sub.trainer?.user?.name || 'Không'}</span></div>
+          <div class="row"><span class="label">Thời hạn:</span> <span>${sub.startDate} đến ${sub.endDate || 'Vô thời hạn'}</span></div>
+          <div class="row"><span class="label">Hình thức TT:</span> <span>${PAY_LABELS[sub.paymentMethod] || sub.paymentMethod}</span></div>
+          <div class="total">Tổng tiền: ${sub.amountPaid?.toLocaleString('vi-VN')} VNĐ</div>
+          <div style="text-align: center; margin-top: 50px; color: #888; font-style: italic;">
+            Cảm ơn quý khách đã sử dụng dịch vụ!
+          </div>
+          <script>
+            window.onload = function() { window.print(); window.close(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   return (
     <>
@@ -128,12 +175,17 @@ export default function Subscriptions() {
                         <td style={{ fontSize:12 }}>{PAY_LABELS[s.paymentMethod] || s.paymentMethod}</td>
                         <td>{STATUS_BADGE[s.status]}</td>
                         <td>
-                          {s.status === 'active' && (
-                            <button className="btn btn-ghost btn-sm" style={{ color:'var(--accent-red)', fontSize:11 }}
-                              onClick={() => { if(window.confirm('Hủy gói này?')) cancelSub.mutate(s.id); }}>
-                              Hủy
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            <button className="btn btn-ghost btn-sm btn-icon" title="In biên lai" onClick={() => printReceipt(s)}>
+                              <Printer size={14} color="var(--accent-blue)" />
                             </button>
-                          )}
+                            {s.status === 'active' && (
+                              <button className="btn btn-ghost btn-sm" style={{ color:'var(--accent-red)', fontSize:11 }}
+                                onClick={() => { if(window.confirm('Hủy gói này?')) cancelSub.mutate(s.id); }}>
+                                Hủy
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -153,10 +205,15 @@ export default function Subscriptions() {
                       </div>
                       <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:4 }}>
                         {STATUS_BADGE[s.status]}
-                        {s.status === 'active' && (
-                          <button className="btn btn-ghost btn-sm" style={{ color:'var(--accent-red)', fontSize:11 }}
-                            onClick={() => { if(window.confirm('Hủy gói này?')) cancelSub.mutate(s.id); }}>Hủy</button>
-                        )}
+                        <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                          <button className="btn btn-ghost btn-sm btn-icon" onClick={() => printReceipt(s)}>
+                            <Printer size={14} color="var(--accent-blue)" />
+                          </button>
+                          {s.status === 'active' && (
+                            <button className="btn btn-ghost btn-sm" style={{ color:'var(--accent-red)', fontSize:11 }}
+                              onClick={() => { if(window.confirm('Hủy gói này?')) cancelSub.mutate(s.id); }}>Hủy</button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -196,6 +253,17 @@ export default function Subscriptions() {
                       ))}
                     </select>
                   </div>
+                  {selectedPkg?.type === 'pt' && (
+                    <div className="form-group" style={{ gridColumn:'1/-1' }}>
+                      <label className="form-label">Huấn luyện viên phụ trách *</label>
+                      <select className="form-input" required value={form.trainerId} onChange={e => setForm(f=>({...f,trainerId:e.target.value}))}>
+                        <option value="">-- Chọn HLV --</option>
+                        {trainers.map(t => (
+                          <option key={t.id} value={t.id}>{t.user?.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="form-group">
                     <label className="form-label">Ngày bắt đầu</label>
                     <input className="form-input" type="date" value={form.startDate} onChange={e => setForm(f=>({...f,startDate:e.target.value}))}/>

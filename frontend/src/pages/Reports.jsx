@@ -26,6 +26,11 @@ export default function Reports() {
     queryFn: () => api.get('/reports/dashboard').then(r => r.data),
   });
 
+  const { data: performance } = useQuery({
+    queryKey: ['performance'],
+    queryFn: () => api.get('/reports/performance').then(r => r.data),
+  });
+
   return (
     <>
       <div className="page-header">
@@ -108,6 +113,43 @@ export default function Reports() {
               )}
             </div>
           ) : null}
+        </div>
+
+        {/* Performance Report */}
+        <div className="card">
+          <div className="card-title">🌟 Báo cáo Hiệu suất Nhân sự (Staff / PT)</div>
+          <div className="table-wrap" style={{ marginTop: 16 }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân sự</th>
+                  <th>Vai trò</th>
+                  <th>Rating trung bình</th>
+                  <th>Số lượt đánh giá</th>
+                  <th>HĐ / Học viên phụ trách</th>
+                </tr>
+              </thead>
+              <tbody>
+                {performance?.map(p => (
+                  <tr key={p.id}>
+                    <td style={{ fontWeight: 600 }}>{p.name} {!p.isActive && <span className="badge badge-gray" style={{ marginLeft: 8 }}>Nghỉ việc</span>}</td>
+                    <td>{p.role === 'pt' ? 'Huấn luyện viên' : 'Nhân viên'}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 16, color: '#f59e0b' }}>★</span>
+                        <strong>{p.avgRating}</strong>
+                      </div>
+                    </td>
+                    <td>{p.feedbacksCount} lượt</td>
+                    <td>{p.handledCount} {p.role === 'pt' ? 'học viên' : 'hợp đồng'}</td>
+                  </tr>
+                ))}
+                {!performance?.length && (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>Chưa có dữ liệu</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </>

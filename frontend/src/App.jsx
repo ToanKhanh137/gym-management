@@ -20,6 +20,8 @@ import Subscriptions from './pages/Subscriptions';
 import MySubscription from './pages/MySubscription';
 import MyTraining from './pages/MyTraining';
 import MemberFeedback from './pages/MemberFeedback';
+import TrainerStudents from './pages/TrainerStudents';
+import TrainerSchedule from './pages/TrainerSchedule';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } });
 
@@ -90,6 +92,16 @@ function AppRoutes() {
       <Route path="/subscriptions" element={
         <ProtectedRoute roles={['owner', 'staff']}>
           <Layout><Subscriptions /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/trainer-students" element={
+        <ProtectedRoute roles={['pt']}>
+          <Layout><TrainerStudents /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/trainer-schedule" element={
+        <ProtectedRoute roles={['pt']}>
+          <Layout><TrainerSchedule /></Layout>
         </ProtectedRoute>
       } />
 

@@ -119,14 +119,19 @@
   - Thêm hàm `openEdit()` pre-fill form từ row hiện tại
   - Thêm nút ✏️ Sửa trên mỗi row (kế bên nút Báo hỏng)
   - Thêm modal Edit với đầy đủ fields: tên, phòng, số lượng, trạng thái, ngày nhập, bảo hành, xuất xứ
-  - Fix statusColor map: `broken` → `damaged` cho đúng với enum DB
-- `[12:22]` Khánh — Cập nhật WORK_LOG.md
+- `[12:22]` Khánh — Fix statusColor map: `broken` → `damaged` cho đúng với enum DB
+- `[22:05]` AI — Đối chiếu tài liệu `Topics-ITSS-20252.md` và bổ sung các chức năng thiếu sót:
+  - **Nghiệp vụ HLV Cá nhân (PT):** Cập nhật `schema.prisma` thêm `trainerId` vào `Subscription`, tạo `trainer.routes.js` quản lý học viên và lịch tập, thêm trang `TrainerStudents.jsx` và `TrainerSchedule.jsx`.
+  - **Hiệu suất Nhân sự:** Thêm API `/api/reports/performance`, hiển thị Rating trung bình và số lượng học viên/hợp đồng trên trang `Reports.jsx`.
+  - **In Biên lai:** Bổ sung chức năng in biên lai trực tiếp trên trang `Subscriptions.jsx` cho từng giao dịch.
+- `[22:06]` Khánh — Cập nhật WORK_LOG.md
 
 ### Tổng kết ngày 10/06
 - ✅ Đã làm: Hoàn chỉnh 100% các trang frontend (16/16 màn hình)
 - ✅ Đã làm: Bổ sung 3 backend endpoints/fixes cho member self-service
 - ✅ Đã làm: Review và sửa DOC_NOTES — Actors đầy đủ, 15 Use Cases (thêm UC-14/15), luồng chính xác
 - ✅ Đã làm: Bổ sung chức năng sửa thiết bị (UC-06 hoàn chỉnh 100%) — modal Edit + PATCH API
+- ✅ Đã làm: Hoàn thiện luồng nghiệp vụ PT (HLV cá nhân), Báo cáo hiệu suất nhân viên và chức năng In biên lai thanh toán.
 - ⬜ Chưa làm: Viết tài liệu chính thức (RA, AD, DD, GD, PP), unit test
 - 🔜 Ngày mai cần: Bắt đầu viết tài liệu chính thức, test end-to-end toàn hệ thống
 
