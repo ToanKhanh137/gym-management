@@ -142,8 +142,20 @@
 ### Buổi sáng
 - _(nhóm ghi vào đây)_
 
+### Buổi chiều
+- `[14:58]` Cường — Đối chiếu yêu cầu chủ đề với code hiện tại, kiểm tra các luồng còn thiếu/sai so với nghiệp vụ phòng gym.
+- `[15:00]` Cường — Fix route `/api/members/my/profile` bị đặt sau `/:id`, tránh lỗi hội viên xem hồ sơ cá nhân bị bắt nhầm thành route chi tiết hội viên.
+- `[15:02]` Cường — Bổ sung validation cho đổi mật khẩu, tạo hội viên, tạo nhân sự và tạo/cập nhật gói tập.
+- `[15:04]` Cường — Fix quản lý gói tập: validate loại gói theo enum nghiệp vụ, cập nhật được duration/session, chặn tắt gói khi còn subscription active.
+- `[15:06]` Cường — Fix đăng ký/gia hạn gói tập: tự động đánh dấu subscription hết hạn, chặn tạo gói mới khi hội viên còn gói active, kiểm tra hội viên và PT tồn tại trước khi tạo subscription.
+- `[15:08]` Cường — Fix check-in/checkout: subscription phải thuộc đúng hội viên, chưa hết hạn, không có check-in đang mở; checkout không được lặp.
+- `[15:10]` Cường — Fix bảo trì thiết bị: không tạo nhiều phiếu pending/in_progress cho cùng thiết bị, không cho resolve lặp.
+- `[15:12]` Cường — Fix phản hồi hội viên: validate rating/targetType, tránh lưu `targetId` cho feedback cơ sở vật chất vì schema hiện trỏ `targetId` sang bảng users.
+- `[15:14]` Cường — Cập nhật `DOC_NOTES.md` ghi lại các fix nghiệp vụ để cuối project đưa vào tài liệu PP/GD/UT.
+- `[15:15]` Cường — Chạy `node --check` cho các route backend đã sửa và `git diff --check`, kết quả pass.
+
 ### Tổng kết ngày 11/06
-- ✅ Đã làm:
+- ✅ Đã làm: Sửa các lỗi nghiệp vụ backend theo đề bài, cập nhật DOC_NOTES/WORK_LOG và kiểm tra syntax các route đã sửa.
 - ⬜ Chưa làm:
 - 🔜 Ngày mai cần:
 

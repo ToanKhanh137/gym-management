@@ -277,6 +277,20 @@
 
 ---
 
+## 🛠️ GHI CHÚ CẬP NHẬT NGHIỆP VỤ 11/06
+> Dùng cho: PP/GD/UT — các fix sau khi đối chiếu đề bài.
+
+- **UC-02 Đăng nhập / đổi mật khẩu:** bổ sung validate đổi mật khẩu, yêu cầu mật khẩu mới tối thiểu 6 ký tự, chặn user không tồn tại hoặc đã bị vô hiệu hóa.
+- **UC-03 Quản lý gói tập:** validate loại gói tập theo enum nghiệp vụ; cập nhật được duration/session; không cho tắt gói khi còn subscription active.
+- **UC-04/UC-11 Đăng ký và gia hạn gói tập:** tự động chuyển subscription hết hạn sang `expired` khi truy vấn; không cho tạo subscription mới nếu hội viên vẫn còn gói `active`; kiểm tra hội viên và PT tồn tại trước khi tạo gói.
+- **UC-05 Check-in/Checkout:** kiểm tra subscription thuộc đúng hội viên, chặn check-in bằng gói hết hạn, chặn hội viên có check-in đang mở, chặn checkout lặp.
+- **UC-06 Bảo trì thiết bị:** kiểm tra thiết bị tồn tại, không cho tạo nhiều phiếu bảo trì pending/in_progress cho cùng thiết bị, không cho resolve lặp.
+- **UC-09 Phản hồi hội viên:** validate `targetType`, rating 1-5; feedback cơ sở vật chất lưu theo `targetType=facility` và không gắn `targetId` để tránh sai FK sang bảng users.
+- **UC-07 Quản lý nhân sự:** validate role khi tạo user; chỉ Owner mới được bật/tắt `isActive`, user thường chỉ được sửa thông tin cá nhân của mình.
+- **Bug fix routing:** đưa `/api/members/my/profile` lên trước `/api/members/:id` để route profile hội viên không bị bắt nhầm thành `id`.
+
+---
+
 ## 🎨 DESIGN PATTERNS ĐÃ DÙNG
 > Dùng cho: Good Design (GD)
 
