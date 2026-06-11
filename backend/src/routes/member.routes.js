@@ -5,6 +5,23 @@ import { authenticate, authorize } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
+// GET /api/members/my/profile — member views own profile
+router.get('/my/profile', authenticate, authorize('member'), async (req, res) => {
+  try {
+    const member = await prisma.member.findUnique({
+      where: { userId: req.user.id },
+      include: {
+        user: { select: { name: true, email: true, phone: true, dob: true } },
+        subscriptions: { include: { package: true }, where: { status: 'active' } },
+        trainingLogs: { orderBy: { checkedInAt: 'desc' }, take: 10 },
+      },
+    });
+    res.json(member);
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/members — staff, owner
 router.get('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, res) => {
   try {
@@ -67,6 +84,9 @@ router.post('/', authenticate, authorize('owner', 'staff'), async (req, res) => 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'name, email, password are required' });
     }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return res.status(409).json({ error: 'Email already in use' });
@@ -119,20 +139,4 @@ router.patch('/:id', authenticate, authorize('owner', 'staff'), async (req, res)
 });
 
 // GET /api/members/my/profile — member views own profile
-router.get('/my/profile', authenticate, authorize('member'), async (req, res) => {
-  try {
-    const member = await prisma.member.findUnique({
-      where: { userId: req.user.id },
-      include: {
-        user: { select: { name: true, email: true, phone: true, dob: true } },
-        subscriptions: { include: { package: true }, where: { status: 'active' } },
-        trainingLogs: { orderBy: { checkedInAt: 'desc' }, take: 10 },
-      },
-    });
-    res.json(member);
-  } catch {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 export default router;

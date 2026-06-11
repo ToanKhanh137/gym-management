@@ -26,6 +26,12 @@ router.post('/', authenticate, authorize('owner'), async (req, res) => {
     if (!name || !email || !password || !role) {
       return res.status(400).json({ error: 'name, email, password, role are required' });
     }
+    if (!['owner', 'staff', 'pt'].includes(role)) {
+      return res.status(400).json({ error: 'role must be owner, staff, or pt' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return res.status(409).json({ error: 'Email already exists' });
@@ -57,9 +63,14 @@ router.patch('/:id', authenticate, async (req, res) => {
     }
 
     const { name, phone, dob, isActive } = req.body;
+    const data = { name, phone, dob };
+    if (req.user.role === 'owner' && typeof isActive === 'boolean') {
+      data.isActive = isActive;
+    }
+
     const user = await prisma.user.update({
       where: { id },
-      data: { name, phone, dob, isActive },
+      data,
       select: { id: true, name: true, email: true, role: true, phone: true, isActive: true },
     });
     res.json(user);

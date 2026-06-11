@@ -24,8 +24,18 @@ router.post('/', authenticate, authorize('owner'), async (req, res) => {
     if (!name || !type || !price) {
       return res.status(400).json({ error: 'name, type, price are required' });
     }
+    if (!['per_session', 'monthly', 'quarterly', 'yearly', 'vip', 'pt'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid package type' });
+    }
     const pkg = await prisma.membershipPackage.create({
-      data: { name, type, durationDays, totalSessions, price: parseFloat(price), description },
+      data: {
+        name,
+        type,
+        durationDays: durationDays ? parseInt(durationDays) : null,
+        totalSessions: totalSessions ? parseInt(totalSessions) : null,
+        price: parseFloat(price),
+        description,
+      },
     });
     res.status(201).json(pkg);
   } catch {
@@ -36,10 +46,21 @@ router.post('/', authenticate, authorize('owner'), async (req, res) => {
 // PATCH /api/packages/:id — owner only
 router.patch('/:id', authenticate, authorize('owner'), async (req, res) => {
   try {
-    const { name, price, description, isActive } = req.body;
+    const { name, type, durationDays, totalSessions, price, description, isActive } = req.body;
+    if (type && !['per_session', 'monthly', 'quarterly', 'yearly', 'vip', 'pt'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid package type' });
+    }
     const pkg = await prisma.membershipPackage.update({
       where: { id: parseInt(req.params.id) },
-      data: { name, price: price ? parseFloat(price) : undefined, description, isActive },
+      data: {
+        name,
+        type,
+        durationDays: durationDays !== undefined ? (durationDays ? parseInt(durationDays) : null) : undefined,
+        totalSessions: totalSessions !== undefined ? (totalSessions ? parseInt(totalSessions) : null) : undefined,
+        price: price ? parseFloat(price) : undefined,
+        description,
+        isActive,
+      },
     });
     res.json(pkg);
   } catch {
@@ -50,6 +71,13 @@ router.patch('/:id', authenticate, authorize('owner'), async (req, res) => {
 // DELETE /api/packages/:id (soft delete)
 router.delete('/:id', authenticate, authorize('owner'), async (req, res) => {
   try {
+    const activeSubscriptions = await prisma.subscription.count({
+      where: { packageId: parseInt(req.params.id), status: 'active' },
+    });
+    if (activeSubscriptions > 0) {
+      return res.status(400).json({ error: 'Cannot deactivate package with active subscriptions' });
+    }
+
     await prisma.membershipPackage.update({
       where: { id: parseInt(req.params.id) },
       data: { isActive: false },
