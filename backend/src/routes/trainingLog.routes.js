@@ -12,6 +12,26 @@ router.post('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, re
 
     const sub = await prisma.subscription.findUnique({ where: { id: parseInt(subscriptionId) } });
     if (!sub || sub.status !== 'active') return res.status(400).json({ error: 'Subscription not active' });
+    if (sub.memberId !== parseInt(memberId)) {
+      return res.status(400).json({ error: 'Subscription does not belong to this member' });
+    }
+    if (sub.endDate && sub.endDate < new Date().toISOString().split('T')[0]) {
+      await prisma.subscription.update({
+        where: { id: sub.id },
+        data: { status: 'expired' },
+      });
+      return res.status(400).json({ error: 'Subscription expired' });
+    }
+
+    const openLog = await prisma.trainingLog.findFirst({
+      where: {
+        memberId: parseInt(memberId),
+        checkedOutAt: null,
+      },
+    });
+    if (openLog) {
+      return res.status(400).json({ error: 'Member already has an open check-in' });
+    }
 
     // Check session-based packages
     if (sub.sessionsTotal !== null && sub.sessionsUsed >= sub.sessionsTotal) {
@@ -42,6 +62,10 @@ router.post('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, re
 // PATCH /api/training-logs/:id/checkout
 router.patch('/:id/checkout', authenticate, authorize('owner', 'staff', 'pt'), async (req, res) => {
   try {
+    const existing = await prisma.trainingLog.findUnique({ where: { id: parseInt(req.params.id) } });
+    if (!existing) return res.status(404).json({ error: 'Training log not found' });
+    if (existing.checkedOutAt) return res.status(400).json({ error: 'Training log already checked out' });
+
     const log = await prisma.trainingLog.update({
       where: { id: parseInt(req.params.id) },
       data: { checkedOutAt: new Date(), notes: req.body.notes },

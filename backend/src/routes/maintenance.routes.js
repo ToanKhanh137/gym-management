@@ -27,6 +27,19 @@ router.post('/', authenticate, authorize('owner', 'staff'), async (req, res) => 
     const { equipmentId, description } = req.body;
     if (!equipmentId || !description) return res.status(400).json({ error: 'equipmentId and description required' });
 
+    const equipment = await prisma.equipment.findUnique({ where: { id: parseInt(equipmentId) } });
+    if (!equipment) return res.status(404).json({ error: 'Equipment not found' });
+
+    const existing = await prisma.maintenanceRequest.findFirst({
+      where: {
+        equipmentId: parseInt(equipmentId),
+        status: { in: ['pending', 'in_progress'] },
+      },
+    });
+    if (existing) {
+      return res.status(409).json({ error: 'Equipment already has an open maintenance request' });
+    }
+
     const [req_] = await prisma.$transaction([
       prisma.maintenanceRequest.create({
         data: { equipmentId: parseInt(equipmentId), description, reportedById: req.user.id },
@@ -45,6 +58,9 @@ router.patch('/:id/resolve', authenticate, authorize('owner', 'staff'), async (r
     const id = parseInt(req.params.id);
     const maintenance = await prisma.maintenanceRequest.findUnique({ where: { id } });
     if (!maintenance) return res.status(404).json({ error: 'Not found' });
+    if (maintenance.status === 'resolved') {
+      return res.status(400).json({ error: 'Maintenance request already resolved' });
+    }
 
     await prisma.$transaction([
       prisma.maintenanceRequest.update({

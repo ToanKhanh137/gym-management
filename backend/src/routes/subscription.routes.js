@@ -4,9 +4,45 @@ import { authenticate, authorize } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
+const ACTIVE_STATUSES = ['active'];
+
+const expireEndedSubscriptions = async () => {
+  const today = new Date().toISOString().split('T')[0];
+  await prisma.subscription.updateMany({
+    where: {
+      status: 'active',
+      endDate: { not: null, lt: today },
+    },
+    data: { status: 'expired' },
+  });
+};
+
+const assertNoActiveSubscription = async (memberId) => {
+  const activeSub = await prisma.subscription.findFirst({
+    where: { memberId: parseInt(memberId), status: { in: ACTIVE_STATUSES } },
+    include: { package: { select: { name: true } } },
+  });
+  if (activeSub) {
+    const error = new Error(`Member already has active package: ${activeSub.package?.name || activeSub.id}`);
+    error.statusCode = 409;
+    throw error;
+  }
+};
+
+const assertTrainerExists = async (trainerId) => {
+  if (!trainerId) return;
+  const trainer = await prisma.trainer.findUnique({ where: { id: parseInt(trainerId) } });
+  if (!trainer) {
+    const error = new Error('Trainer not found');
+    error.statusCode = 404;
+    throw error;
+  }
+};
+
 // GET /api/subscriptions?memberId=
 router.get('/', authenticate, async (req, res) => {
   try {
+    await expireEndedSubscriptions();
     let { memberId, status } = req.query;
 
     // Members can only see their own subscriptions
@@ -45,14 +81,22 @@ router.post('/', authenticate, authorize('owner', 'staff'), async (req, res) => 
       return res.status(400).json({ error: 'memberId, packageId, paymentMethod required' });
     }
 
+    const member = await prisma.member.findUnique({ where: { id: parseInt(memberId) } });
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+
     const pkg = await prisma.membershipPackage.findUnique({ where: { id: parseInt(packageId) } });
     if (!pkg || !pkg.isActive) return res.status(404).json({ error: 'Package not found or inactive' });
 
     if (pkg.type === 'pt' && !trainerId) {
       return res.status(400).json({ error: 'Trainer must be assigned for PT packages' });
     }
+    await assertTrainerExists(trainerId);
+    await assertNoActiveSubscription(memberId);
 
     const start = startDate ? new Date(startDate) : new Date();
+    if (Number.isNaN(start.getTime())) {
+      return res.status(400).json({ error: 'Invalid startDate' });
+    }
     let endDate = null;
     if (pkg.durationDays) {
       const end = new Date(start);
@@ -81,7 +125,7 @@ router.post('/', authenticate, authorize('owner', 'staff'), async (req, res) => 
     res.status(201).json(sub);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Server error' });
   }
 });
 
@@ -103,6 +147,8 @@ router.post('/mine', authenticate, authorize('member'), async (req, res) => {
     if (pkg.type === 'pt' && !trainerId) {
       return res.status(400).json({ error: 'Trainer must be assigned for PT packages' });
     }
+    await assertTrainerExists(trainerId);
+    await assertNoActiveSubscription(member.id);
 
     const start = new Date();
     let endDate = null;
@@ -133,7 +179,7 @@ router.post('/mine', authenticate, authorize('member'), async (req, res) => {
     res.status(201).json(sub);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Server error' });
   }
 });
 

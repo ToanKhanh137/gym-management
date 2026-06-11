@@ -37,16 +37,32 @@ router.post('/', authenticate, authorize('member'), async (req, res) => {
   try {
     const { targetType, targetId, rating, comment } = req.body;
     if (!targetType || !rating) return res.status(400).json({ error: 'targetType and rating required' });
+    if (!['staff', 'pt', 'facility'].includes(targetType)) {
+      return res.status(400).json({ error: 'Invalid targetType' });
+    }
+    const parsedRating = parseInt(rating);
+    if (Number.isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+      return res.status(400).json({ error: 'rating must be between 1 and 5' });
+    }
 
     const member = await prisma.member.findUnique({ where: { userId: req.user.id } });
     if (!member) return res.status(404).json({ error: 'Member not found' });
+
+    let parsedTargetId = null;
+    if (targetType !== 'facility' && targetId) {
+      const target = await prisma.user.findUnique({ where: { id: parseInt(targetId) } });
+      if (!target || target.role !== targetType) {
+        return res.status(404).json({ error: 'Feedback target not found' });
+      }
+      parsedTargetId = target.id;
+    }
 
     const feedback = await prisma.feedback.create({
       data: {
         memberId: member.id,
         targetType,
-        targetId: targetId ? parseInt(targetId) : null,
-        rating: parseInt(rating),
+        targetId: parsedTargetId,
+        rating: parsedRating,
         comment,
       },
     });
