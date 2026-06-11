@@ -30,10 +30,7 @@ export default function Equipment() {
     queryFn: () => api.get('/rooms').then(r => r.data),
   });
 
-  const { data: maintenance = [] } = useQuery({
-    queryKey: ['maintenance'],
-    queryFn: () => api.get('/maintenance').then(r => r.data),
-  });
+
 
   const createEq = useMutation({
     mutationFn: (data) => api.post('/equipment', data),
@@ -50,10 +47,7 @@ export default function Equipment() {
     onSuccess: () => { qc.invalidateQueries(['equipment', 'maintenance']); setShowMaintModal(false); setMaintDesc(''); },
   });
 
-  const resolveMaint = useMutation({
-    mutationFn: (id) => api.patch(`/maintenance/${id}/resolve`),
-    onSuccess: () => qc.invalidateQueries(['equipment', 'maintenance']),
-  });
+
 
   const openEdit = (eq) => {
     setEditTarget(eq);
@@ -69,7 +63,7 @@ export default function Equipment() {
     setShowEditModal(true);
   };
 
-  const pending = maintenance.filter(m => m.status !== 'resolved');
+
 
   return (
     <>
@@ -78,19 +72,6 @@ export default function Equipment() {
         <p className="page-subtitle">Danh sách thiết bị và yêu cầu bảo trì</p>
       </div>
       <div className="page-body">
-        {/* Maintenance alerts */}
-        {pending.length > 0 && (
-          <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 10, padding: 14, marginBottom: 20 }}>
-            <div style={{ fontWeight: 600, marginBottom: 8, color: '#f59e0b' }}>🔧 {pending.length} yêu cầu bảo trì đang chờ</div>
-            {pending.map(m => (
-              <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderTop: '1px solid rgba(245,158,11,0.2)', fontSize: 13 }}>
-                <span><strong>{m.equipment?.name}</strong> — {m.description}</span>
-                <button className="btn btn-success btn-sm" onClick={() => { if (confirm('Xác nhận đã sửa?')) resolveMaint.mutate(m.id); }}>✓ Đã sửa</button>
-              </div>
-            ))}
-          </div>
-        )}
-
         <div className="table-wrap">
           <div className="table-header">
             <span className="table-title">Thiết bị ({equipment.length})</span>

@@ -22,6 +22,7 @@ import MyTraining from './pages/MyTraining';
 import MemberFeedback from './pages/MemberFeedback';
 import TrainerStudents from './pages/TrainerStudents';
 import TrainerSchedule from './pages/TrainerSchedule';
+import Maintenance from './pages/Maintenance';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } });
 
@@ -67,6 +68,11 @@ function AppRoutes() {
       <Route path="/equipment" element={
         <ProtectedRoute roles={['owner', 'staff']}>
           <Layout><Equipment /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/maintenance" element={
+        <ProtectedRoute roles={['owner', 'staff']}>
+          <Layout><Maintenance /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/reports" element={
