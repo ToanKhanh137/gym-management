@@ -50,7 +50,6 @@ export default function MySubscription() {
 
   const activePackages = packages.filter(p => p.isActive);
   const selectedPkg = activePackages.find(p => p.id === parseInt(form.packageId));
-
   const active = subs.find(s => s.status === 'active');
   const history = subs.filter(s => s.status !== 'active');
 
@@ -62,14 +61,9 @@ export default function MySubscription() {
 
   return (
     <>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 className="page-title">Gói tập của tôi</h1>
-          <p className="page-subtitle">Thông tin gói tập hiện tại và lịch sử đăng ký</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={20} /> Đăng ký gói mới
-        </button>
+      <div className="page-header">
+        <h1 className="page-title">Gói tập của tôi</h1>
+        <p className="page-subtitle">Thông tin gói tập hiện tại và lịch sử đăng ký</p>
       </div>
 
       <div className="page-body">
@@ -103,34 +97,35 @@ export default function MySubscription() {
                           <div style={{ fontSize: 14, fontWeight: 600 }}>{active.endDate}</div>
                         </div>
                       )}
-                      {daysLeft !== null && (
-                        <div>
-                          <div style={{ fontSize: 11, opacity: 0.7 }}>Còn lại</div>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: isUrgent ? '#ffdd57' : 'white' }}>
-                            {daysLeft > 0 ? `${daysLeft} ngày` : 'Hết hạn hôm nay'}
-                          </div>
-                        </div>
-                      )}
                       {active.sessionsTotal && (
                         <div>
-                          <div style={{ fontSize: 11, opacity: 0.7 }}>Số buổi</div>
-                          <div style={{ fontSize: 14, fontWeight: 600 }}>{active.sessionsUsed}/{active.sessionsTotal}</div>
+                          <div style={{ fontSize: 11, opacity: 0.7 }}>Số buổi đã tập</div>
+                          <div style={{ fontSize: 14, fontWeight: 600 }}>{active.sessionsUsed} / {active.sessionsTotal} buổi</div>
+                        </div>
+                      )}
+                      {active.trainer && (
+                        <div>
+                          <div style={{ fontSize: 11, opacity: 0.7 }}>HLV cá nhân</div>
+                          <div style={{ fontSize: 14, fontWeight: 600 }}>{active.trainer.user?.name}</div>
                         </div>
                       )}
                     </div>
-                    {isUrgent && daysLeft > 0 && (
-                      <div style={{ marginTop: 14, padding: '8px 12px', background: 'rgba(255,221,87,0.2)', borderRadius: 8, border: '1px solid rgba(255,221,87,0.4)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <AlertTriangle size={14} /> Gói tập sắp hết hạn! Liên hệ nhân viên để gia hạn.
+                    {isUrgent && (
+                      <div style={{ marginTop: 20, padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <AlertTriangle size={18} />
+                        <div style={{ fontSize: 13, fontWeight: 500 }}>Gói tập của bạn sẽ hết hạn sau {daysLeft} ngày. Vui lòng liên hệ quầy lễ tân để thực hiện gia hạn.</div>
                       </div>
                     )}
                   </div>
                 </div>
               );
             })() : (
-              <div className="table-wrap" style={{ marginBottom: 24, padding: '32px 24px', textAlign: 'center' }}>
-                <Ticket size={48} style={{ color: 'var(--text-muted)', opacity: 0.3, marginBottom: 12 }} />
-                <div style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 6 }}>Bạn chưa có gói tập nào đang active</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Hãy đăng ký một gói tập mới để bắt đầu ngay!</div>
+              <div className="card" style={{ padding: 30, textAlign: 'center', marginBottom: 24 }}>
+                <Ticket size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
+                <h3 style={{ fontSize: 16, marginBottom: 6 }}>Bạn chưa đăng ký gói tập nào</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, maxWidth: 400, margin: '0 auto' }}>
+                  Vui lòng liên hệ quầy lễ tân để lựa chọn và đăng ký gói tập phù hợp để bắt đầu tập luyện.
+                </p>
               </div>
             )}
 
@@ -142,7 +137,15 @@ export default function MySubscription() {
                 </div>
                 <div className="mobile-hide-table">
                   <table>
-                    <thead><tr><th>Gói tập</th><th>Ngày bắt đầu</th><th>Ngày kết thúc</th><th>Thanh toán</th><th>Trạng thái</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th>Gói tập</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày hết hạn</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái</th>
+                      </tr>
+                    </thead>
                     <tbody>
                       {history.map(s => {
                         const cfg = STATUS_CONFIG[s.status] || {};
@@ -178,56 +181,6 @@ export default function MySubscription() {
           </>
         )}
       </div>
-
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: 500 }}>
-            <div className="modal-header">
-              <h2 className="modal-title">Đăng ký gói tập mới</h2>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
-            </div>
-            <div className="modal-body">
-              {formError && <div style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 16 }}>{formError}</div>}
-              <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
-                <div className="form-group">
-                  <label className="form-label">Gói tập *</label>
-                  <select className="form-input" required value={form.packageId} onChange={e => setForm(f => ({ ...f, packageId: e.target.value }))}>
-                    <option value="">-- Chọn gói tập --</option>
-                    {activePackages.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} — {p.price?.toLocaleString('vi-VN')}đ</option>
-                    ))}
-                  </select>
-                </div>
-                {selectedPkg?.type === 'pt' && (
-                  <div className="form-group">
-                    <label className="form-label">Huấn luyện viên phụ trách *</label>
-                    <select className="form-input" required value={form.trainerId} onChange={e => setForm(f => ({ ...f, trainerId: e.target.value }))}>
-                      <option value="">-- Chọn HLV --</option>
-                      {trainers.map(t => (
-                        <option key={t.id} value={t.id}>{t.user?.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <div className="form-group">
-                  <label className="form-label">Phương thức thanh toán</label>
-                  <select className="form-input" value={form.paymentMethod} onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}>
-                    <option value="cash">Tiền mặt (tại quầy)</option>
-                    <option value="bank_transfer">Chuyển khoản</option>
-                    <option value="e_wallet">Ví điện tử</option>
-                  </select>
-                </div>
-                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                  <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Hủy</button>
-                  <button type="submit" className="btn btn-primary" disabled={createSub.isPending}>
-                    {createSub.isPending ? 'Đang xử lý...' : 'Đăng ký & Thanh toán'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

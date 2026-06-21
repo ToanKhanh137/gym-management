@@ -132,56 +132,7 @@ router.post('/', authenticate, authorize('owner', 'staff'), async (req, res) => 
 
 // POST /api/subscriptions/mine — member registers for a package themselves
 router.post('/mine', authenticate, authorize('member'), async (req, res) => {
-  try {
-    const { packageId, paymentMethod, trainerId } = req.body;
-
-    const member = await prisma.member.findUnique({ where: { userId: req.user.id } });
-    if (!member) return res.status(404).json({ error: 'Member profile not found' });
-
-    if (!packageId || !paymentMethod) {
-      return res.status(400).json({ error: 'packageId, paymentMethod required' });
-    }
-
-    const pkg = await prisma.membershipPackage.findUnique({ where: { id: parseInt(packageId) } });
-    if (!pkg || !pkg.isActive) return res.status(404).json({ error: 'Package not found or inactive' });
-
-    if (pkg.type === 'pt' && !trainerId) {
-      return res.status(400).json({ error: 'Trainer must be assigned for PT packages' });
-    }
-    await assertTrainerExists(trainerId);
-    await assertNoActiveSubscription(member.id);
-
-    const start = new Date();
-    let endDate = null;
-    if (pkg.durationDays) {
-      const end = new Date(start);
-      end.setDate(end.getDate() + pkg.durationDays);
-      endDate = end.toISOString().split('T')[0];
-    }
-
-    const sub = await prisma.subscription.create({
-      data: {
-        memberId: member.id,
-        packageId: parseInt(packageId),
-        startDate: start.toISOString().split('T')[0],
-        endDate,
-        sessionsTotal: pkg.totalSessions,
-        sessionsUsed: 0,
-        status: 'active',
-        paymentMethod,
-        amountPaid: pkg.price,
-        paidAt: new Date(),
-        createdById: req.user.id,
-        ...(trainerId && { trainerId: parseInt(trainerId) }),
-      },
-      include: { package: true, trainer: { include: { user: { select: { name: true } } } } },
-    });
-
-    res.status(201).json(sub);
-  } catch (err) {
-    console.error(err);
-    res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Server error' });
-  }
+  return res.status(403).json({ error: 'Member is not allowed to register subscriptions online. Please contact the front desk.' });
 });
 
 // POST /api/subscriptions/:id/renew
