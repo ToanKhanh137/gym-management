@@ -109,9 +109,6 @@ export default function Login() {
           </button>
         </form>
 
-        <p style={{ marginTop: 16, fontSize: 13, textAlign: 'center', color: 'var(--text-secondary)' }}>
-          Chưa có tài khoản? <a href="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Đăng ký ngay</a>
-        </p>
 
         {/* Quick login for dev/demo */}
         <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>

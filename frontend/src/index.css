@@ -614,11 +614,10 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 32px 36px;
+  padding: 48px 40px;
   background: var(--bg-surface);
-  overflow-y: auto;
 }
-.login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
 .login-logo-icon {
   width: 44px; height: 44px;
   background: var(--primary);
@@ -629,8 +628,8 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
 .login-logo-name { font-size: 18px; font-weight: 800; }
 .login-logo-tagline { font-size: 11px; color: var(--text-muted); }
 .login-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-.login-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
-.login-form { display: flex; flex-direction: column; gap: 12px; }
+.login-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
+.login-form { display: flex; flex-direction: column; gap: 16px; }
 .login-btn {
   background: var(--primary);
   color: white;
@@ -803,4 +802,16 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
   /* Schedule row — stack day + times */
   .schedule-row { flex-direction: column; align-items: flex-start; gap: 10px; }
   .schedule-row > div { width: 100%; }
+}
+
+/* ============ DESKTOP LOGIN COMPACT (≥900px — khi ảnh hiện ra) ============ */
+@media (min-width: 900px) {
+  .login-right {
+    padding: 28px 36px;
+    overflow-y: auto;
+  }
+  .login-logo { margin-bottom: 18px; }
+  .login-sub  { margin-bottom: 14px; }
+  .login-form { gap: 12px; }
+  .login-title { margin-bottom: 4px; }
 }
