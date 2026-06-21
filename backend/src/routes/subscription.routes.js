@@ -46,16 +46,25 @@ router.get('/', authenticate, async (req, res) => {
     let { memberId, status } = req.query;
 
     // Members can only see their own subscriptions
+    let ptFilter = {};
     if (req.user.role === 'member') {
       const member = await prisma.member.findUnique({ where: { userId: req.user.id } });
       if (!member) return res.json([]);
       memberId = member.id;
-    } else if (!['owner', 'staff', 'pt'].includes(req.user.role)) {
+    } else if (req.user.role === 'pt') {
+      const trainer = await prisma.trainer.findUnique({ where: { userId: req.user.id } });
+      if (trainer) {
+        ptFilter = { trainerId: trainer.id };
+      } else {
+        return res.json([]);
+      }
+    } else if (!['owner', 'staff'].includes(req.user.role)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
     const subscriptions = await prisma.subscription.findMany({
       where: {
+        ...ptFilter,
         ...(memberId && { memberId: parseInt(memberId) }),
         ...(status && { status }),
       },
