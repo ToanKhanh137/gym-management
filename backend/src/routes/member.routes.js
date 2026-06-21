@@ -49,16 +49,21 @@ router.get('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, res
     const members = await prisma.member.findMany({
       where: {
         ...ptFilter,
-        user: {
-          isActive: true,
-          ...(search && {
-            OR: [
-              { name: { contains: search } },
-              { email: { contains: search } },
-              { phone: { contains: search } },
-            ],
-          }),
-        },
+        user: { isActive: true },
+        ...(search && {
+          OR: [
+            { memberCode: { contains: search } },
+            {
+              user: {
+                OR: [
+                  { name: { contains: search } },
+                  { email: { contains: search } },
+                  { phone: { contains: search } },
+                ],
+              },
+            },
+          ],
+        }),
       },
       include: {
         user: { select: { id: true, name: true, email: true, phone: true, dob: true } },

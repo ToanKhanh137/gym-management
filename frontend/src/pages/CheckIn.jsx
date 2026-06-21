@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { UserCheck, LogOut, Users, X } from 'lucide-react';
+import { UserCheck, LogOut, Users, X, QrCode } from 'lucide-react';
 import api from '../api/client';
 
 export default function CheckIn() {
@@ -12,6 +12,8 @@ export default function CheckIn() {
   const [error, setError] = useState('');
   const [checkoutTarget, setCheckoutTarget] = useState(null);
   const [checkoutNotes, setCheckoutNotes] = useState('');
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [scannedCodeInput, setScannedCodeInput] = useState('');
 
   const { data: members = [] } = useQuery({
     queryKey: ['members', memberSearch],
@@ -39,6 +41,29 @@ export default function CheckIn() {
     },
     onError: (e) => setError(e.response?.data?.error || 'Check-in thất bại'),
   });
+
+  const { data: allMembers = [] } = useQuery({
+    queryKey: ['all-members-list'],
+    queryFn: () => api.get('/members').then(r => r.data),
+    enabled: showQRScanner,
+  });
+
+  const handleSimulateScan = (memberCode) => {
+    if (!memberCode) return;
+    setError('');
+    api.get(`/members?search=${memberCode}`).then(res => {
+      const found = res.data.find(m => m.memberCode === memberCode) || res.data[0];
+      if (found) {
+        selectMember(found);
+        setShowQRScanner(false);
+        setScannedCodeInput('');
+      } else {
+        setError('Không tìm thấy hội viên ứng với mã QR này');
+      }
+    }).catch(() => {
+      setError('Lỗi khi quét mã QR');
+    });
+  };
 
   const checkout = useMutation({
     mutationFn: ({ id, notes }) => api.patch(`/training-logs/${id}/checkout`, { notes }),
@@ -88,8 +113,18 @@ export default function CheckIn() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div className="form-group">
-              <label className="form-label">Tìm hội viên *</label>
-              <input className="form-input" placeholder="Nhập tên, email hoặc SĐT..."
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Tìm hội viên *</span>
+                <button 
+                  type="button" 
+                  className="btn btn-ghost btn-sm" 
+                  style={{ padding: '2px 8px', fontSize: 11, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 4, height: 'auto', background: 'transparent' }}
+                  onClick={() => setShowQRScanner(true)}
+                >
+                  <QrCode size={12} /> Quét mã QR
+                </button>
+              </label>
+              <input className="form-input" placeholder="Nhập tên, mã số, email hoặc SĐT..."
                 value={memberSearch}
                 onChange={e => { setMemberSearch(e.target.value); setSelectedMember(null); setSelectedSub(''); }} />
             </div>
@@ -298,6 +333,108 @@ export default function CheckIn() {
               >
                 {checkout.isPending ? 'Đang xử lý...' : 'Xác nhận & Out'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR Scanner Simulator Modal */}
+      {showQRScanner && (
+        <div className="modal-overlay" onClick={() => { setShowQRScanner(false); setScannedCodeInput(''); }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
+            <div className="modal-header">
+              <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <QrCode size={18} color="var(--primary)" /> Quét mã QR Hội viên
+              </span>
+              <button className="btn btn-ghost btn-icon" onClick={() => { setShowQRScanner(false); setScannedCodeInput(''); }}><X size={16}/></button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Viewfinder frame */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '1',
+                maxHeight: 250,
+                background: '#090a0f',
+                border: '2px solid var(--border)',
+                borderRadius: 8,
+                overflow: 'hidden',
+                margin: '0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: 12
+              }}>
+                {/* Simulated scan line */}
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: '100%',
+                  height: '2px',
+                  background: 'var(--primary)',
+                  boxShadow: '0 0 10px var(--primary)',
+                  animation: 'scan 2.5s infinite linear',
+                  top: 0
+                }} />
+                {/* CSS animation definition directly */}
+                <style dangerouslySetInnerHTML={{__html: `
+                  @keyframes scan {
+                    0% { top: 0%; }
+                    50% { top: 100%; }
+                    100% { top: 0%; }
+                  }
+                `}} />
+
+                {/* Corner brackets */}
+                <div style={{ position: 'absolute', top: 16, left: 16, width: 20, height: 20, borderTop: '3px solid var(--primary)', borderLeft: '3px solid var(--primary)' }} />
+                <div style={{ position: 'absolute', top: 16, right: 16, width: 20, height: 20, borderTop: '3px solid var(--primary)', borderRight: '3px solid var(--primary)' }} />
+                <div style={{ position: 'absolute', bottom: 16, left: 16, width: 20, height: 20, borderBottom: '3px solid var(--primary)', borderLeft: '3px solid var(--primary)' }} />
+                <div style={{ position: 'absolute', bottom: 16, right: 16, width: 20, height: 20, borderBottom: '3px solid var(--primary)', borderRight: '3px solid var(--primary)' }} />
+
+                <QrCode size={48} style={{ opacity: 0.15 }} />
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', zIndex: 1 }}>Camera giả lập: Đang dò tìm mã QR...</span>
+              </div>
+
+              {/* Simulation picker */}
+              <div className="form-group">
+                <label className="form-label">Chọn hội viên giả lập quét QR</label>
+                <select className="form-select" onChange={e => handleSimulateScan(e.target.value)} defaultValue="">
+                  <option value="">-- Chọn hội viên để quét --</option>
+                  {allMembers.map(m => (
+                    <option key={m.id} value={m.memberCode}>
+                      {m.user?.name} ({m.memberCode})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ height: 1, flex: 1, background: 'var(--border)' }}></span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>HOẶC NHẬP THỦ CÔNG</span>
+                <span style={{ height: 1, flex: 1, background: 'var(--border)' }}></span>
+              </div>
+
+              {/* Manual code input */}
+              <div className="form-group">
+                <label className="form-label">Mã QR / Mã hội viên</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input 
+                    className="form-input" 
+                    placeholder="Ví dụ: MEM00001..." 
+                    value={scannedCodeInput}
+                    onChange={e => setScannedCodeInput(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-primary" 
+                    onClick={() => handleSimulateScan(scannedCodeInput.trim())}
+                    disabled={!scannedCodeInput.trim()}
+                  >
+                    Quét
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
