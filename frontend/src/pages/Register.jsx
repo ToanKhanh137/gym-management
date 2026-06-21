@@ -26,7 +26,7 @@ export default function Register() {
   };
 
   return (
-    <div className="login-page">
+    <div className="login-page" style={{ overflowY: 'auto' }}>
       {/* Left — hero image */}
       <div className="login-left">
         <img src={gymBg} alt="Gym" className="login-bg" />
@@ -41,47 +41,46 @@ export default function Register() {
       </div>
 
       {/* Right — register form */}
-      <div className="login-right" style={{ maxWidth: 420 }}>
-        <div style={{ marginBottom: 16 }}>
-          <button onClick={() => navigate('/login')} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-            <ArrowLeft size={14} /> Quay lại đăng nhập
+      <div className="login-right" style={{ maxWidth: 400, padding: '24px 20px', justifyContent: 'center', overflowY: 'auto' }}>
+        <div style={{ marginBottom: 12 }}>
+          <button onClick={() => navigate('/login')} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+            <ArrowLeft size={13} /> Quay lại đăng nhập
           </button>
         </div>
 
-        <div className="login-logo" style={{ marginBottom: 20 }}>
-          <div className="login-logo-icon"><Dumbbell size={22} color="white" /></div>
+        <div className="login-logo" style={{ marginBottom: 16 }}>
+          <div className="login-logo-icon" style={{ width: 36, height: 36, fontSize: 18 }}><Dumbbell size={18} color="white" /></div>
           <div>
-            <div className="login-logo-name">GymPro</div>
-            <div className="login-logo-tagline">Đăng ký hội viên mới</div>
+            <div className="login-logo-name" style={{ fontSize: 16 }}>GymPro</div>
+            <div className="login-logo-tagline" style={{ fontSize: 10 }}>Đăng ký hội viên mới</div>
           </div>
         </div>
 
-        <h1 className="login-title" style={{ fontSize: 22 }}>Đăng ký tài khoản</h1>
-        <p className="login-sub" style={{ marginBottom: 20 }}>Trở thành hội viên để theo dõi lịch tập và gói dịch vụ</p>
+        <h1 className="login-title" style={{ fontSize: 20, marginBottom: 4 }}>Đăng ký tài khoản</h1>
+        <p className="login-sub" style={{ fontSize: 13, marginBottom: 16 }}>Trở thành hội viên để theo dõi dịch vụ</p>
 
         {error && (
-          <div className="alert alert-error" style={{ marginBottom: 12 }}>
+          <div className="alert alert-error" style={{ marginBottom: 12, padding: '8px 12px', fontSize: 13 }}>
             {error}
           </div>
         )}
 
-        <form className="login-form" onSubmit={handleSubmit} style={{ gap: 12 }}>
+        <form className="login-form" onSubmit={handleSubmit} style={{ gap: 10 }}>
           <div className="form-group">
-            <label className="form-label">Họ và tên *</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                className="form-input"
-                type="text"
-                placeholder="Nguyễn Văn A"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                required
-              />
-            </div>
+            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Họ và tên *</label>
+            <input
+              className="form-input"
+              type="text"
+              placeholder="Nguyễn Văn A"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              required
+              style={{ padding: '8px 12px', fontSize: 13 }}
+            />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Email *</label>
+            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Email *</label>
             <input
               className="form-input"
               type="email"
@@ -89,11 +88,12 @@ export default function Register() {
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               required
+              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label">Mật khẩu *</label>
+            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Mật khẩu *</label>
             <input
               className="form-input"
               type="password"
@@ -102,40 +102,43 @@ export default function Register() {
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               required
               minLength={6}
+              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
 
-          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div className="form-group">
-              <label className="form-label">Số điện thoại</label>
+              <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Số điện thoại</label>
               <input
                 className="form-input"
                 type="tel"
                 placeholder="0987xxxxxx"
                 value={form.phone}
                 onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                style={{ padding: '8px 12px', fontSize: 13 }}
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Ngày sinh</label>
+              <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Ngày sinh</label>
               <input
                 className="form-input"
                 type="date"
                 value={form.dob}
                 onChange={e => setForm(f => ({ ...f, dob: e.target.value }))}
+                style={{ padding: '8px 12px', fontSize: 13 }}
               />
             </div>
           </div>
 
-          <button id="register-btn" type="submit" className="login-btn" disabled={loading} style={{ marginTop: 10 }}>
+          <button id="register-btn" type="submit" className="login-btn" disabled={loading} style={{ marginTop: 8, padding: '10px', fontSize: 13 }}>
             {loading
-              ? <><Loader2 size={16} style={{ animation: 'spin 0.7s linear infinite' }} /> Đang xử lý...</>
+              ? <><Loader2 size={15} style={{ animation: 'spin 0.7s linear infinite' }} /> Đang xử lý...</>
               : 'Đăng ký ngay'
             }
           </button>
         </form>
 
-        <p style={{ marginTop: 20, fontSize: 13, textAlign: 'center', color: 'var(--text-secondary)' }}>
+        <p style={{ marginTop: 16, fontSize: 13, textAlign: 'center', color: 'var(--text-secondary)' }}>
           Đã có tài khoản? <a href="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>Đăng nhập</a>
         </p>
       </div>
