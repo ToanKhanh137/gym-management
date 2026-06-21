@@ -144,36 +144,64 @@ export default function Reports() {
         <div className="card">
           <div className="card-title"><Star size={15} /> Báo cáo Hiệu suất Nhân sự (Staff / PT)</div>
           <div className="table-wrap" style={{ marginTop: 16 }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Nhân sự</th>
-                  <th>Vai trò</th>
-                  <th>Rating trung bình</th>
-                  <th>Số lượt đánh giá</th>
-                  <th>HĐ / Học viên phụ trách</th>
-                </tr>
-              </thead>
-              <tbody>
-                {performance?.map(p => (
-                  <tr key={p.id}>
-                    <td style={{ fontWeight: 600 }}>{p.name} {!p.isActive && <span className="badge badge-gray" style={{ marginLeft: 8 }}>Nghỉ việc</span>}</td>
-                    <td>{p.role === 'pt' ? 'Huấn luyện viên' : 'Nhân viên'}</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Star size={14} fill="#f59e0b" stroke="#f59e0b" />
-                        <strong>{p.avgRating}</strong>
-                      </div>
-                    </td>
-                    <td>{p.feedbacksCount} lượt</td>
-                    <td>{p.handledCount} {p.role === 'pt' ? 'học viên' : 'hợp đồng'}</td>
+            <div className="mobile-hide-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nhân sự</th>
+                    <th>Vai trò</th>
+                    <th>Rating trung bình</th>
+                    <th>Số lượt đánh giá</th>
+                    <th>HĐ / Học viên phụ trách</th>
                   </tr>
-                ))}
-                {!performance?.length && (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>Chưa có dữ liệu</td></tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {performance?.map(p => (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight: 600 }}>{p.name} {!p.isActive && <span className="badge badge-gray" style={{ marginLeft: 8 }}>Nghỉ việc</span>}</td>
+                      <td>{p.role === 'pt' ? 'Huấn luyện viên' : 'Nhân viên'}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Star size={14} fill="#f59e0b" stroke="#f59e0b" />
+                          <strong>{p.avgRating}</strong>
+                        </div>
+                      </td>
+                      <td>{p.feedbacksCount} lượt</td>
+                      <td>{p.handledCount} {p.role === 'pt' ? 'học viên' : 'hợp đồng'}</td>
+                    </tr>
+                  ))}
+                  {!performance?.length && (
+                    <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 20 }}>Chưa có dữ liệu</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mobile-only-cards" style={{ padding: '8px 0' }}>
+              {performance?.map(p => (
+                <div key={p.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>
+                      {p.name}
+                      {!p.isActive && <span className="badge badge-gray" style={{ fontSize: 9, marginLeft: 6, padding: '1px 4px' }}>Nghỉ</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                      {p.role === 'pt' ? 'Huấn luyện viên' : 'Nhân viên'} | {p.handledCount} {p.role === 'pt' ? 'học viên' : 'hợp đồng'}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                      <Star size={13} fill="#f59e0b" stroke="#f59e0b" />
+                      <strong style={{ fontSize: 14 }}>{p.avgRating}</strong>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{p.feedbacksCount} đánh giá</div>
+                  </div>
+                </div>
+              ))}
+              {!performance?.length && (
+                <div className="empty-state" style={{ padding: '20px' }}>Chưa có dữ liệu</div>
+              )}
+            </div>
           </div>
         </div>
       </div>

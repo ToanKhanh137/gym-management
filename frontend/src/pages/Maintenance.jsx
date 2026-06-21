@@ -55,47 +55,84 @@ export default function Maintenance() {
               <div className="empty-state-text">Chưa có yêu cầu bảo trì nào</div>
             </div>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Mã BB</th>
-                  <th>Thiết bị</th>
-                  <th>Người báo</th>
-                  <th>Ngày báo</th>
-                  <th>Mô tả lỗi</th>
-                  <th>Trạng thái</th>
-                  <th>Xử lý bởi</th>
-                  <th>Ngày sửa</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <div className="mobile-hide-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mã BB</th>
+                      <th>Thiết bị</th>
+                      <th>Người báo</th>
+                      <th>Ngày báo</th>
+                      <th>Mô tả lỗi</th>
+                      <th>Trạng thái</th>
+                      <th>Xử lý bởi</th>
+                      <th>Ngày sửa</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(m => (
+                      <tr key={m.id}>
+                        <td><span className="member-code">#{m.id.toString().padStart(4,'0')}</span></td>
+                        <td>
+                          <div style={{ fontWeight: 500 }}>{m.equipment?.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.equipment?.equipmentCode}</div>
+                        </td>
+                        <td style={{ fontSize: 13 }}>{m.reportedBy?.name}</td>
+                        <td style={{ fontSize: 12 }}>{new Date(m.reportedAt).toLocaleDateString('vi-VN')}</td>
+                        <td style={{ fontSize: 13, maxWidth: 200 }}>{m.description}</td>
+                        <td>
+                          {m.status === 'pending' ? <span className="badge badge-yellow">Đang chờ</span> : <span className="badge badge-green">Đã sửa</span>}
+                        </td>
+                        <td style={{ fontSize: 13 }}>{m.resolvedBy?.name || '—'}</td>
+                        <td style={{ fontSize: 12 }}>{m.resolvedAt ? new Date(m.resolvedAt).toLocaleDateString('vi-VN') : '—'}</td>
+                        <td>
+                          {m.status === 'pending' && (
+                            <button className="btn btn-success btn-sm" onClick={() => { if(window.confirm('Xác nhận đã sửa xong thiết bị này?')) resolveMaint.mutate(m.id); }}>
+                              <CheckCircle size={14} style={{ marginRight: 4 }}/> Xong
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mobile-only-cards" style={{ padding: '8px 0' }}>
                 {filtered.map(m => (
-                  <tr key={m.id}>
-                    <td><span className="member-code">#{m.id.toString().padStart(4,'0')}</span></td>
-                    <td>
-                      <div style={{ fontWeight: 500 }}>{m.equipment?.name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.equipment?.equipmentCode}</div>
-                    </td>
-                    <td style={{ fontSize: 13 }}>{m.reportedBy?.name}</td>
-                    <td style={{ fontSize: 12 }}>{new Date(m.reportedAt).toLocaleDateString('vi-VN')}</td>
-                    <td style={{ fontSize: 13, maxWidth: 200 }}>{m.description}</td>
-                    <td>
+                  <div key={m.id} style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{m.equipment?.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.equipment?.equipmentCode}</div>
+                      </div>
                       {m.status === 'pending' ? <span className="badge badge-yellow">Đang chờ</span> : <span className="badge badge-green">Đã sửa</span>}
-                    </td>
-                    <td style={{ fontSize: 13 }}>{m.resolvedBy?.name || '—'}</td>
-                    <td style={{ fontSize: 12 }}>{m.resolvedAt ? new Date(m.resolvedAt).toLocaleDateString('vi-VN') : '—'}</td>
-                    <td>
-                      {m.status === 'pending' && (
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <div>Mã BB: <span className="member-code">#{m.id.toString().padStart(4,'0')}</span></div>
+                      <div>Người báo: {m.reportedBy?.name} | Ngày báo: {new Date(m.reportedAt).toLocaleDateString('vi-VN')}</div>
+                      <div style={{ marginTop: 2, background: 'rgba(255,255,255,0.02)', padding: '6px 10px', borderRadius: 4, border: '1px solid var(--border)', fontSize: 12, color: 'var(--text-primary)' }}>
+                        <strong>Lỗi:</strong> {m.description}
+                      </div>
+                      {m.status === 'resolved' && (
+                        <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-muted)' }}>
+                          Sửa bởi: {m.resolvedBy?.name || '—'} lúc {new Date(m.resolvedAt).toLocaleDateString('vi-VN')}
+                        </div>
+                      )}
+                    </div>
+                    {m.status === 'pending' && (
+                      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                         <button className="btn btn-success btn-sm" onClick={() => { if(window.confirm('Xác nhận đã sửa xong thiết bị này?')) resolveMaint.mutate(m.id); }}>
                           <CheckCircle size={14} style={{ marginRight: 4 }}/> Xong
                         </button>
-                      )}
-                    </td>
-                  </tr>
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>

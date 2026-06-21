@@ -90,39 +90,72 @@ export default function Equipment() {
           ) : equipment.length === 0 ? (
             <div className="empty-state"><div className="empty-state-icon"><Dumbbell size={36} /></div><div className="empty-state-text">Chưa có thiết bị</div></div>
           ) : (
-            <table>
-              <thead><tr><th>Mã</th><th>Tên thiết bị</th><th>Phòng</th><th>SL</th><th>Nhập ngày</th><th>Bảo hành</th><th>Trạng thái</th><th></th></tr></thead>
-              <tbody>
+            <>
+              <div className="mobile-hide-table">
+                <table>
+                  <thead><tr><th>Mã</th><th>Tên thiết bị</th><th>Phòng</th><th>SL</th><th>Nhập ngày</th><th>Bảo hành</th><th>Trạng thái</th><th></th></tr></thead>
+                  <tbody>
+                    {equipment.map(eq => (
+                      <tr key={eq.id}>
+                        <td><span className="member-code">{eq.equipmentCode}</span></td>
+                        <td style={{ fontWeight: 500 }}>{eq.name}</td>
+                        <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{eq.room?.name || '—'}</td>
+                        <td>{eq.quantity}</td>
+                        <td style={{ fontSize: 12 }}>{eq.importedAt || '—'}</td>
+                        <td style={{ fontSize: 12 }}>{eq.warrantyUntil || '—'}</td>
+                        <td><span className={`badge ${statusColor[eq.status]}`}>{statusLabel[eq.status]}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              title="Sửa thông tin"
+                              onClick={() => openEdit(eq)}
+                              style={{ padding: '4px 8px' }}
+                            >
+                              Sửa
+                            </button>
+                            {eq.status === 'good' && (
+                              <button className="btn btn-ghost btn-sm" onClick={() => { setMaintEq(eq); setShowMaintModal(true); }}>
+                                Báo hỏng
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mobile-only-cards" style={{ padding: '8px 0' }}>
                 {equipment.map(eq => (
-                  <tr key={eq.id}>
-                    <td><span className="member-code">{eq.equipmentCode}</span></td>
-                    <td style={{ fontWeight: 500 }}>{eq.name}</td>
-                    <td style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{eq.room?.name || '—'}</td>
-                    <td>{eq.quantity}</td>
-                    <td style={{ fontSize: 12 }}>{eq.importedAt || '—'}</td>
-                    <td style={{ fontSize: 12 }}>{eq.warrantyUntil || '—'}</td>
-                    <td><span className={`badge ${statusColor[eq.status]}`}>{statusLabel[eq.status]}</span></td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button
-                          className="btn btn-ghost btn-sm"
-                          title="Sửa thông tin"
-                          onClick={() => openEdit(eq)}
-                          style={{ padding: '4px 8px' }}
-                        >
-                          Sửa
-                        </button>
-                        {eq.status === 'good' && (
-                          <button className="btn btn-ghost btn-sm" onClick={() => { setMaintEq(eq); setShowMaintModal(true); }}>
-                            Báo hỏng
-                          </button>
-                        )}
+                  <div key={eq.id} style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{eq.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Mã: {eq.equipmentCode}</div>
                       </div>
-                    </td>
-                  </tr>
+                      <span className={`badge ${statusColor[eq.status]}`}>{statusLabel[eq.status]}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <div>Phòng: {eq.room?.name || '—'} | Số lượng: {eq.quantity}</div>
+                      <div>Ngày nhập: {eq.importedAt || '—'}</div>
+                      <div style={{ marginTop: 2 }}>Bảo hành: {eq.warrantyUntil || '—'}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => openEdit(eq)} style={{ padding: '4px 8px' }}>
+                        Sửa
+                      </button>
+                      {eq.status === 'good' && (
+                        <button className="btn btn-ghost btn-sm" onClick={() => { setMaintEq(eq); setShowMaintModal(true); }} style={{ padding: '4px 8px' }}>
+                          Báo hỏng
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
