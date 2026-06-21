@@ -177,7 +177,7 @@ export default function Dashboard() {
               {user?.role === 'pt' && (
                 <>
                   <QuickAction icon={CheckCircle} label="Check-in hội viên" to="/checkin"       color="var(--primary)" />
-                  <QuickAction icon={Users}       label="Danh sách hội viên" to="/members"       color="var(--accent)" />
+                  <QuickAction icon={Users}       label="Danh sách học viên" to="/trainer-students" color="var(--accent)" />
                 </>
               )}
               {user?.role === 'owner' && (
