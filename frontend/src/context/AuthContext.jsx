@@ -16,6 +16,14 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const register = useCallback(async (name, email, password, phone, dob) => {
+    const { data } = await api.post('/auth/register', { name, email, password, phone, dob });
+    localStorage.setItem('gym_token', data.token);
+    localStorage.setItem('gym_user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('gym_token');
     localStorage.removeItem('gym_user');
@@ -23,7 +31,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

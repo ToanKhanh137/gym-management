@@ -46,6 +46,67 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /api/auth/register
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, password, phone, dob } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Tên, email và mật khẩu là bắt buộc' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return res.status(409).json({ error: 'Email đã được sử dụng' });
+    }
+
+    const memberCode = 'MEM' + Date.now().toString().slice(-6);
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        role: 'member',
+        phone,
+        dob,
+        member: {
+          create: { memberCode },
+        },
+      },
+      include: {
+        member: true,
+      },
+    });
+
+    // Automatically generate token after successful registration
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    );
+
+    res.status(201).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 // POST /api/auth/change-password
 import { authenticate } from '../middleware/auth.middleware.js';
 

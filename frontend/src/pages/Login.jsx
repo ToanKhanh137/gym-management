@@ -45,7 +45,7 @@ export default function Login() {
       </div>
 
       {/* Right — login form */}
-      <div className="login-right">
+      <div className="login-right" style={{ maxWidth: 400 }}>
         <div className="login-logo">
           <div className="login-logo-icon"><Dumbbell size={22} color="white" /></div>
           <div>
@@ -96,12 +96,16 @@ export default function Login() {
           </button>
         </form>
 
+        <p style={{ marginTop: 16, fontSize: 13, textAlign: 'center', color: 'var(--text-secondary)' }}>
+          Chưa có tài khoản? <a href="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Đăng ký ngay</a>
+        </p>
+
         {/* Quick login for dev/demo */}
-        <div style={{ marginTop: 28, borderTop: '1px solid var(--border)', paddingTop: 20 }}>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, textAlign: 'center' }}>
+        <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>
             TÀI KHOẢN DEMO
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {[
               { label: 'Chủ phòng tập', email: 'owner@gym.com', pw: 'owner123' },
               { label: 'Nhân viên',       email: 'staff@gym.com', pw: 'staff123' },
@@ -116,8 +120,8 @@ export default function Login() {
                   background: 'var(--bg-card)',
                   border: '1px solid var(--border)',
                   borderRadius: 8,
-                  padding: '8px 10px',
-                  fontSize: 12,
+                  padding: '6px 8px',
+                  fontSize: 11,
                   color: 'var(--text-secondary)',
                   cursor: 'pointer',
                   textAlign: 'left',
