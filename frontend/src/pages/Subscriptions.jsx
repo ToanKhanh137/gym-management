@@ -291,10 +291,10 @@ export default function Subscriptions() {
                       ))}
                     </select>
                   </div>
-                  {selectedPkg?.type === 'pt' && (
+                  {(selectedPkg?.type === 'pt' || selectedPkg?.type === 'vip') && (
                     <div className="form-group" style={{ gridColumn:'1/-1' }}>
-                      <label className="form-label">Huấn luyện viên phụ trách *</label>
-                      <select className="form-input" required value={form.trainerId} onChange={e => setForm(f=>({...f,trainerId:e.target.value}))}>
+                      <label className="form-label">Huấn luyện viên phụ trách {selectedPkg?.type === 'pt' ? '*' : '(nếu có)'}</label>
+                      <select className="form-input" required={selectedPkg?.type === 'pt'} value={form.trainerId} onChange={e => setForm(f=>({...f,trainerId:e.target.value}))}>
                         <option value="">-- Chọn HLV --</option>
                         {trainers.map(t => (
                           <option key={t.id} value={t.id}>{t.user?.name}</option>

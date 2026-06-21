@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { UserCheck, LogOut, Users } from 'lucide-react';
+import { UserCheck, LogOut, Users, X } from 'lucide-react';
 import api from '../api/client';
 
 export default function CheckIn() {
@@ -9,6 +9,8 @@ export default function CheckIn() {
   const [selectedSub, setSelectedSub] = useState('');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [checkoutTarget, setCheckoutTarget] = useState(null);
+  const [checkoutNotes, setCheckoutNotes] = useState('');
 
   const { data: members = [] } = useQuery({
     queryKey: ['members', memberSearch],
@@ -37,8 +39,12 @@ export default function CheckIn() {
   });
 
   const checkout = useMutation({
-    mutationFn: (logId) => api.patch(`/training-logs/${logId}/checkout`),
-    onSuccess: () => refetchLogs(),
+    mutationFn: ({ id, notes }) => api.patch(`/training-logs/${id}/checkout`, { notes }),
+    onSuccess: () => {
+      refetchLogs();
+      setCheckoutTarget(null);
+      setCheckoutNotes('');
+    },
   });
 
   const selectMember = (m) => {
@@ -154,44 +160,127 @@ export default function CheckIn() {
               <div className="empty-state-text">Chưa có lượt check-in hôm nay</div>
             </div>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Hội viên</th>
-                  <th>Check-in</th>
-                  <th>Check-out</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              <div className="mobile-hide-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Hội viên</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...todayLogs].reverse().map(log => (
+                      <tr key={log.id}>
+                        <td>
+                          <div style={{ fontWeight: 500, fontSize: 13 }}>{log.member?.user?.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{log.member?.memberCode}</div>
+                        </td>
+                        <td style={{ fontSize: 13 }}>
+                          {new Date(log.checkedInAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td>
+                          {log.checkedOutAt ? (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontSize: 13 }}>
+                                {new Date(log.checkedOutAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              {log.notes && (
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  Ghi chú: {log.notes}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="badge badge-orange">Đang tập</span>
+                          )}
+                        </td>
+                        <td>
+                          {!log.checkedOutAt && (
+                            <button className="btn btn-ghost btn-sm" onClick={() => { setCheckoutTarget(log); setCheckoutNotes(log.notes || ''); }}>
+                              <LogOut size={13} /> Out
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mobile-only-cards" style={{ padding: '8px 0' }}>
                 {[...todayLogs].reverse().map(log => (
-                  <tr key={log.id}>
-                    <td>
-                      <div style={{ fontWeight: 500, fontSize: 13 }}>{log.member?.user?.name}</div>
+                  <div key={log.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{log.member?.user?.name}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{log.member?.memberCode}</div>
-                    </td>
-                    <td style={{ fontSize: 13 }}>
-                      {new Date(log.checkedInAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td>
-                      {log.checkedOutAt
-                        ? new Date(log.checkedOutAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                        : <span className="badge badge-orange">Đang tập</span>}
-                    </td>
-                    <td>
-                      {!log.checkedOutAt && (
-                        <button className="btn btn-ghost btn-sm" onClick={() => checkout.mutate(log.id)}>
-                          <LogOut size={13} /> Out
-                        </button>
+                      <div style={{ fontSize: 12, marginTop: 4, display: 'flex', gap: 12 }}>
+                        <span style={{ color: 'var(--accent-green)' }}>In: {new Date(log.checkedInAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                        {log.checkedOutAt ? (
+                          <span style={{ color: 'var(--accent-red)' }}>Out: {new Date(log.checkedOutAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                        ) : (
+                          <span className="badge badge-orange" style={{ fontSize: 10, padding: '2px 6px' }}>Đang tập</span>
+                        )}
+                      </div>
+                      {log.notes && (
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4, fontStyle: 'italic' }}>
+                          Ghi chú: {log.notes}
+                        </div>
                       )}
-                    </td>
-                  </tr>
+                    </div>
+                    {!log.checkedOutAt && (
+                      <button className="btn btn-primary btn-sm" onClick={() => { setCheckoutTarget(log); setCheckoutNotes(log.notes || ''); }} style={{ padding: '6px 12px', fontSize: 12 }}>
+                        <LogOut size={12} /> Out
+                      </button>
+                    )}
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
+
+      {/* Checkout Notes Modal */}
+      {checkoutTarget && (
+        <div className="modal-overlay" onClick={() => setCheckoutTarget(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
+            <div className="modal-header">
+              <span className="modal-title">Ghi chú & Check-out</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setCheckoutTarget(null)}><X size={16}/></button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 600, fontSize: 15 }}>{checkoutTarget.member?.user?.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{checkoutTarget.member?.memberCode}</div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Ghi chú buổi tập (không bắt buộc)</label>
+                <textarea 
+                  className="form-input" 
+                  rows="3" 
+                  placeholder="Ví dụ: Tập ngực tốt, chạy bộ 15p..." 
+                  value={checkoutNotes}
+                  onChange={e => setCheckoutNotes(e.target.value)}
+                  style={{ width: '100%', resize: 'vertical', minHeight: 80, padding: 10 }}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setCheckoutTarget(null)}>Hủy</button>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => checkout.mutate({ id: checkoutTarget.id, notes: checkoutNotes })}
+                disabled={checkout.isPending}
+              >
+                {checkout.isPending ? 'Đang xử lý...' : 'Xác nhận & Out'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
