@@ -39,6 +39,14 @@ export default function MemberProfile() {
               <div style={{ marginTop: 8 }}>
                 <span className="member-code">{profile.memberCode}</span>
               </div>
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${profile.memberCode}&color=f05a28&bgcolor=15171e`} 
+                  alt="QR Code Check-in" 
+                  style={{ width: 110, height: 110, borderRadius: 8, padding: 8, background: 'var(--bg-surface)', border: '1px solid var(--border)' }} 
+                />
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Mã QR Check-in</span>
+              </div>
             </div>
 
             {/* Active subscription */}

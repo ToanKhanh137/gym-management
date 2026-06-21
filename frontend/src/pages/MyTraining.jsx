@@ -29,6 +29,28 @@ export default function MyTraining() {
     return mins >= 60 ? `${Math.floor(mins/60)}h${mins%60 ? (mins%60)+'p' : ''}` : `${mins} phút`;
   };
 
+  const attendanceGrid = () => {
+    const days = [];
+    const now = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      
+      const checkedIn = logs.some(l => {
+        if (!l.checkedInAt) return false;
+        return l.checkedInAt.split('T')[0] === dateStr;
+      });
+      
+      days.push({
+        date: d,
+        checkedIn,
+        dateStr
+      });
+    }
+    return days;
+  };
+
   return (
     <>
       <div className="page-header">
@@ -54,6 +76,54 @@ export default function MyTraining() {
               <div className="stat-card" style={{ flex:'1 1 140px', minWidth:120, padding:'16px 20px' }}>
                 <div style={{ fontSize:28, fontWeight:700, color:'var(--accent-purple, #a78bfa)' }}>{avgMinutes}</div>
                 <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:2 }}>Phút/buổi (TB)</div>
+              </div>
+            </div>
+
+            {/* 30-day attendance calendar */}
+            <div className="card" style={{ marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Calendar size={16} color="var(--primary)" />
+                Tần suất tập luyện (30 ngày qua)
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', background: 'rgba(255,255,255,0.01)', padding: 12, borderRadius: 8, border: '1px solid var(--border)', justifyContent: 'center' }}>
+                {attendanceGrid().map((day, idx) => {
+                  const dayNum = day.date.getDate();
+                  const monthNum = day.date.getMonth() + 1;
+                  const tooltip = `${dayNum}/${monthNum}: ${day.checkedIn ? 'Đã đi tập' : 'Không tập'}`;
+                  return (
+                    <div
+                      key={idx}
+                      title={tooltip}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 4,
+                        background: day.checkedIn ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                        border: day.checkedIn ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 10,
+                        fontWeight: day.checkedIn ? 700 : 400,
+                        color: day.checkedIn ? 'white' : 'var(--text-muted)',
+                        cursor: 'help',
+                        transition: 'all 0.15s'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.15)';
+                        if (day.checkedIn) {
+                          e.currentTarget.style.boxShadow = '0 0 8px var(--primary)';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      {dayNum}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
