@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ============ DESIGN TOKENS ============ */
 :root {
@@ -695,6 +695,33 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
 .page-info { font-size: 12px; color: var(--text-muted); margin-right: auto; }
 
 
+/* Member profile layout */
+.member-profile-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Member detail layout */
+.member-detail-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Schedule row (StaffSchedule / TrainerSchedule) */
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
 /* ============ RESPONSIVE BREAKPOINTS ============ */
 @media (max-width: 768px) {
   .sidebar {
@@ -768,6 +795,11 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
   /* Login — full width */
   .login-right { padding: 32px 24px; max-width: 100%; }
 
-  /* Member detail — stack */
+  /* Member detail/profile — stack */
   .member-detail-grid { grid-template-columns: 1fr !important; }
+  .member-profile-grid { grid-template-columns: 1fr !important; }
+
+  /* Schedule row — stack day + times */
+  .schedule-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .schedule-row > div { width: 100%; }
 }

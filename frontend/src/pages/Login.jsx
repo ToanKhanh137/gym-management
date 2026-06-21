@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Lock, Loader2 } from 'lucide-react';
+import { Dumbbell, Lock, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import gymBg from '../assets/gym_bg.png';
 
@@ -54,12 +54,12 @@ export default function Login() {
           </div>
         </div>
 
-        <h1 className="login-title">Xin chào 👋</h1>
+        <h1 className="login-title">Xin chào!</h1>
         <p className="login-sub">Đăng nhập để tiếp tục quản lý</p>
 
         {error && (
           <div className="alert alert-error" style={{ marginBottom: 12 }}>
-            ⚠️ {error}
+            <AlertTriangle size={14} /> {error}
           </div>
         )}
 
@@ -103,10 +103,10 @@ export default function Login() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {[
-              { label: '🏠 Chủ phòng tập', email: 'owner@gym.com', pw: 'owner123' },
-              { label: '📋 Nhân viên', email: 'staff@gym.com', pw: 'staff123' },
-              { label: '💪 HLV cá nhân', email: 'pt@gym.com', pw: 'pt123' },
-              { label: '🙋 Hội viên', email: 'member@gym.com', pw: 'member123' },
+              { label: 'Chủ phòng tập', email: 'owner@gym.com', pw: 'owner123' },
+              { label: 'Nhân viên',       email: 'staff@gym.com', pw: 'staff123' },
+              { label: 'HLV cá nhân',     email: 'pt@gym.com',    pw: 'pt123' },
+              { label: 'Hội viên',        email: 'member@gym.com', pw: 'member123' },
             ].map(q => (
               <button
                 key={q.email}

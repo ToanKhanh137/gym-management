@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Users, CheckCircle2, DollarSign, Activity, Star, TrendingUp } from 'lucide-react';
 import api from '../api/client';
 
 const fmtCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
@@ -46,24 +47,24 @@ export default function Reports() {
         {/* KPI row */}
         <div className="stats-grid" style={{ marginBottom: 24 }}>
           <div className="stat-card" style={{ '--card-color': '#00d4ff', '--card-color-dim': 'rgba(0,212,255,0.12)' }}>
-            <div className="stat-card-icon">👥</div>
+            <div className="stat-card-icon" style={{ color: '#00d4ff' }}><Users size={22} /></div>
             <div className="stat-card-label">Tổng hội viên</div>
             <div className="stat-card-value">{summary?.totalMembers ?? '...'}</div>
             <div className="stat-card-sub">+{summary?.newThisMonth ?? 0} tháng này</div>
           </div>
           <div className="stat-card" style={{ '--card-color': '#22c55e', '--card-color-dim': 'rgba(34,197,94,0.12)' }}>
-            <div className="stat-card-icon">✅</div>
+            <div className="stat-card-icon" style={{ color: '#22c55e' }}><CheckCircle2 size={22} /></div>
             <div className="stat-card-label">Gói đang active</div>
             <div className="stat-card-value">{summary?.activeSubscriptions ?? '...'}</div>
           </div>
           <div className="stat-card" style={{ '--card-color': '#f59e0b', '--card-color-dim': 'rgba(245,158,11,0.12)' }}>
-            <div className="stat-card-icon">💰</div>
+            <div className="stat-card-icon" style={{ color: '#f59e0b' }}><DollarSign size={22} /></div>
             <div className="stat-card-label">Doanh thu tháng này</div>
             <div className="stat-card-value">{dash ? (dash.monthlyRevenue / 1e6).toFixed(1) + 'M' : '...'}</div>
             <div className="stat-card-sub">VNĐ</div>
           </div>
           <div className="stat-card" style={{ '--card-color': '#f05a28', '--card-color-dim': 'rgba(240,90,40,0.12)' }}>
-            <div className="stat-card-icon">🏃</div>
+            <div className="stat-card-icon" style={{ color: '#f05a28' }}><Activity size={22} /></div>
             <div className="stat-card-label">Check-in hôm nay</div>
             <div className="stat-card-value">{dash?.todayCheckIns ?? '...'}</div>
           </div>
@@ -71,7 +72,7 @@ export default function Reports() {
 
         {/* Revenue filter */}
         <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-title">📊 Báo cáo doanh thu</div>
+          <div className="card-title"><TrendingUp size={15} /> Báo cáo doanh thu</div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 20 }}>
             <div className="form-group" style={{ flex: 1, minWidth: 150 }}>
               <label className="form-label">Từ ngày</label>
@@ -141,7 +142,7 @@ export default function Reports() {
 
         {/* Performance Report */}
         <div className="card">
-          <div className="card-title">🌟 Báo cáo Hiệu suất Nhân sự (Staff / PT)</div>
+          <div className="card-title"><Star size={15} /> Báo cáo Hiệu suất Nhân sự (Staff / PT)</div>
           <div className="table-wrap" style={{ marginTop: 16 }}>
             <table>
               <thead>
@@ -160,7 +161,7 @@ export default function Reports() {
                     <td>{p.role === 'pt' ? 'Huấn luyện viên' : 'Nhân viên'}</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ fontSize: 16, color: '#f59e0b' }}>★</span>
+                        <Star size={14} fill="#f59e0b" stroke="#f59e0b" />
                         <strong>{p.avgRating}</strong>
                       </div>
                     </td>

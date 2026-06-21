@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Wrench } from 'lucide-react';
 import api from '../api/client';
 
 export default function Maintenance() {
@@ -51,7 +51,7 @@ export default function Maintenance() {
              <div className="loading-spinner"><div className="spinner" /></div>
           ) : filtered.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">🔧</div>
+              <div className="empty-state-icon"><Wrench size={36} /></div>
               <div className="empty-state-text">Chưa có yêu cầu bảo trì nào</div>
             </div>
           ) : (

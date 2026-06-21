@@ -102,7 +102,7 @@ export default function Rooms() {
             <div className="loading-spinner"><div className="spinner" /> Đang tải...</div>
           ) : rooms.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon" style={{ fontSize: 36, opacity: 0.3 }}>🏠</div>
+              <div className="empty-state-icon" style={{ fontSize: 36, opacity: 0.3 }}><Home size={36} /></div>
               <div className="empty-state-text">Chưa có phòng tập nào</div>
             </div>
           ) : (

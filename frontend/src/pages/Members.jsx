@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, ChevronRight, X } from 'lucide-react';
+import { Search, Plus, ChevronRight, X, Users } from 'lucide-react';
 import api from '../api/client';
 
 const statusBadge = {
@@ -77,7 +77,7 @@ export default function Members() {
             <div className="loading-spinner"><div className="spinner" /> Đang tải...</div>
           ) : members.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon" style={{ fontSize: 36, opacity: 0.3 }}>👥</div>
+              <div className="empty-state-icon" style={{ fontSize: 36, opacity: 0.3 }}><Users size={36} /></div>
               <div className="empty-state-text">{search ? 'Không tìm thấy hội viên' : 'Chưa có hội viên nào'}</div>
             </div>
           ) : (

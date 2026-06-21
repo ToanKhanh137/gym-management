@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ticket, CheckCircle2, XCircle, Plus, X } from 'lucide-react';
+import { Ticket, CheckCircle2, XCircle, Plus, X, AlertTriangle } from 'lucide-react';
 import api from '../api/client';
 
 const STATUS_CONFIG = {
@@ -119,8 +119,8 @@ export default function MySubscription() {
                       )}
                     </div>
                     {isUrgent && daysLeft > 0 && (
-                      <div style={{ marginTop: 14, padding: '8px 12px', background: 'rgba(255,221,87,0.2)', borderRadius: 8, border: '1px solid rgba(255,221,87,0.4)', fontSize: 13 }}>
-                        ⚠️ Gói tập sắp hết hạn! Liên hệ nhân viên để gia hạn.
+                      <div style={{ marginTop: 14, padding: '8px 12px', background: 'rgba(255,221,87,0.2)', borderRadius: 8, border: '1px solid rgba(255,221,87,0.4)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <AlertTriangle size={14} /> Gói tập sắp hết hạn! Liên hệ nhân viên để gia hạn.
                       </div>
                     )}
                   </div>

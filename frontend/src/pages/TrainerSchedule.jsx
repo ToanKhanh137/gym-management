@@ -83,28 +83,26 @@ export default function TrainerSchedule() {
                 {DAYS.map((dayName, idx) => {
                   const isActive = schedule[idx]?.active;
                   return (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px', background: isActive ? 'var(--bg-secondary)' : 'transparent', border: '1px solid var(--border)', borderRadius: 8 }}>
-                      <div style={{ width: 100 }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: 600 }}>
-                          <input type="checkbox" checked={!!isActive} onChange={() => handleToggle(idx)} />
-                          {dayName}
-                        </label>
-                      </div>
+                    <div key={idx} className="schedule-row" style={{ background: isActive ? 'rgba(240,90,40,0.06)' : 'transparent', borderColor: isActive ? 'rgba(240,90,40,0.25)' : 'var(--border)' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: 600, minWidth: 120, flexShrink: 0 }}>
+                        <input type="checkbox" checked={!!isActive} onChange={() => handleToggle(idx)} />
+                        {dayName}
+                      </label>
                       
                       {isActive ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, flexWrap: 'wrap' }}>
                           <input 
                             type="time" 
                             className="form-input" 
-                            style={{ flex: 1 }}
+                            style={{ flex: '1 1 110px', minWidth: 100 }}
                             value={schedule[idx]?.startTime || ''} 
                             onChange={e => handleChange(idx, 'startTime', e.target.value)} 
                           />
-                          <span style={{ color: 'var(--text-muted)' }}>-</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: 12, flexShrink: 0 }}>–</span>
                           <input 
                             type="time" 
                             className="form-input" 
-                            style={{ flex: 1 }}
+                            style={{ flex: '1 1 110px', minWidth: 100 }}
                             value={schedule[idx]?.endTime || ''} 
                             onChange={e => handleChange(idx, 'endTime', e.target.value)} 
                           />

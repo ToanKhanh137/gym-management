@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Dumbbell, X } from 'lucide-react';
 import api from '../api/client';
 
 const statusColor = { good: 'badge-green', maintenance: 'badge-yellow', damaged: 'badge-red', retired: 'badge-gray' };
-const statusLabel = { good: '✅ Tốt', maintenance: '🔧 Bảo trì', damaged: '❌ Hỏng', retired: '📦 Ngừng dùng' };
+const statusLabel = { good: 'Tốt', maintenance: 'Bảo trì', damaged: 'Hỏng', retired: 'Ngừng dùng' };
 
 const emptyForm = { equipmentCode: '', name: '', roomId: '', quantity: 1, importedAt: '', warrantyUntil: '', origin: '' };
 
@@ -87,7 +88,7 @@ export default function Equipment() {
           {isLoading ? (
             <div className="loading-spinner"><div className="spinner" /></div>
           ) : equipment.length === 0 ? (
-            <div className="empty-state"><div className="empty-state-icon">🏋️</div><div className="empty-state-text">Chưa có thiết bị</div></div>
+            <div className="empty-state"><div className="empty-state-icon"><Dumbbell size={36} /></div><div className="empty-state-text">Chưa có thiết bị</div></div>
           ) : (
             <table>
               <thead><tr><th>Mã</th><th>Tên thiết bị</th><th>Phòng</th><th>SL</th><th>Nhập ngày</th><th>Bảo hành</th><th>Trạng thái</th><th></th></tr></thead>
@@ -109,11 +110,11 @@ export default function Equipment() {
                           onClick={() => openEdit(eq)}
                           style={{ padding: '4px 8px' }}
                         >
-                          ✏️ Sửa
+                          Sửa
                         </button>
                         {eq.status === 'good' && (
                           <button className="btn btn-ghost btn-sm" onClick={() => { setMaintEq(eq); setShowMaintModal(true); }}>
-                            🔧 Báo hỏng
+                            Báo hỏng
                           </button>
                         )}
                       </div>
@@ -132,7 +133,7 @@ export default function Equipment() {
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span className="modal-title">+ Thêm thiết bị</span>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}>✕</button>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={e => { e.preventDefault(); createEq.mutate({ ...form, quantity: parseInt(form.quantity), roomId: form.roomId ? parseInt(form.roomId) : null }); }}>
               <div className="modal-body">
@@ -173,7 +174,7 @@ export default function Equipment() {
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary" disabled={createEq.isPending}>
-                  {createEq.isPending ? 'Đang lưu...' : '✓ Thêm thiết bị'}
+                  {createEq.isPending ? 'Đang lưu...' : 'Thêm thiết bị'}
                 </button>
               </div>
             </form>
@@ -186,8 +187,8 @@ export default function Equipment() {
         <div className="modal-overlay" onClick={() => setShowMaintModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span className="modal-title">🔧 Báo cáo hỏng hóc</span>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowMaintModal(false)}>✕</button>
+              <span className="modal-title">Báo cáo hỏng hóc</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowMaintModal(false)}><X size={18} /></button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Thiết bị: <strong>{maintEq?.name}</strong></p>
@@ -201,7 +202,7 @@ export default function Equipment() {
               <button className="btn btn-ghost" onClick={() => setShowMaintModal(false)}>Hủy</button>
               <button className="btn btn-primary" disabled={!maintDesc || reportMaint.isPending}
                 onClick={() => reportMaint.mutate({ equipmentId: maintEq.id, description: maintDesc })}>
-                {reportMaint.isPending ? 'Đang gửi...' : '✓ Gửi báo cáo'}
+                {reportMaint.isPending ? 'Đang gửi...' : 'Gửi báo cáo'}
               </button>
             </div>
           </div>
@@ -213,8 +214,8 @@ export default function Equipment() {
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span className="modal-title">✏️ Sửa thiết bị — {editTarget.equipmentCode}</span>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowEditModal(false)}>✕</button>
+              <span className="modal-title">Sửa thiết bị — {editTarget.equipmentCode}</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowEditModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={e => {
               e.preventDefault();
@@ -255,10 +256,10 @@ export default function Equipment() {
                     <label className="form-label">Trạng thái</label>
                     <select className="form-select" value={editForm.status}
                       onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}>
-                      <option value="good">✅ Tốt</option>
-                      <option value="maintenance">🔧 Bảo trì</option>
-                      <option value="damaged">❌ Hỏng</option>
-                      <option value="retired">📦 Ngừng dùng</option>
+                      <option value="good">Tốt</option>
+                      <option value="maintenance">Bảo trì</option>
+                      <option value="damaged">Hỏng</option>
+                      <option value="retired">Ngừng dùng</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -281,7 +282,7 @@ export default function Equipment() {
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowEditModal(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary" disabled={updateEq.isPending}>
-                  {updateEq.isPending ? 'Đang lưu...' : '✓ Lưu thay đổi'}
+                  {updateEq.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>
               </div>
             </form>

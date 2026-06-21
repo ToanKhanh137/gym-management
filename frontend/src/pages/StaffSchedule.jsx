@@ -109,52 +109,53 @@ export default function StaffSchedule() {
           {isLoading ? (
             <div className="loading-spinner"><div className="spinner" /> Đang tải...</div>
           ) : (
-            <div style={{ display: 'grid', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {rows.map((row) => (
                 <div
                   key={row.dayOfWeek}
+                  className="schedule-row"
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: '150px 90px 1fr 1fr',
-                    gap: 12,
-                    alignItems: 'center',
-                    padding: 12,
-                    border: '1px solid var(--border)',
-                    borderRadius: 8,
-                    background: row.active ? 'var(--bg-secondary)' : 'transparent',
+                    background: row.active ? 'rgba(240,90,40,0.06)' : 'transparent',
+                    borderColor: row.active ? 'rgba(240,90,40,0.25)' : 'var(--border)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
-                    <Calendar size={15} /> {row.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, minWidth: 130 }}>
+                    <Calendar size={15} color={row.active ? 'var(--primary)' : 'var(--text-muted)'} />
+                    <span>{row.name}</span>
                   </div>
-                  {user?.role === 'owner' ? (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
-                      <input
-                        type="checkbox"
-                        checked={row.active}
-                        onChange={() => updateDay(row.dayOfWeek, { active: !row.active })}
-                      />
-                      Làm
-                    </label>
-                  ) : (
-                    <span className={`badge ${row.active ? 'badge-green' : 'badge-gray'}`}>
-                      {row.active ? 'Có ca' : 'Nghỉ'}
-                    </span>
-                  )}
-                  <input
-                    className="form-input"
-                    type="time"
-                    disabled={!row.active || user?.role !== 'owner'}
-                    value={row.startTime}
-                    onChange={(event) => updateDay(row.dayOfWeek, { startTime: event.target.value })}
-                  />
-                  <input
-                    className="form-input"
-                    type="time"
-                    disabled={!row.active || user?.role !== 'owner'}
-                    value={row.endTime}
-                    onChange={(event) => updateDay(row.dayOfWeek, { endTime: event.target.value })}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, flexWrap: 'wrap' }}>
+                    {user?.role === 'owner' ? (
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, minWidth: 70, flexShrink: 0 }}>
+                        <input
+                          type="checkbox"
+                          checked={row.active}
+                          onChange={() => updateDay(row.dayOfWeek, { active: !row.active })}
+                        />
+                        Làm việc
+                      </label>
+                    ) : (
+                      <span className={`badge ${row.active ? 'badge-green' : 'badge-gray'}`} style={{ flexShrink: 0 }}>
+                        {row.active ? 'Có ca' : 'Nghỉ'}
+                      </span>
+                    )}
+                    <input
+                      className="form-input"
+                      type="time"
+                      style={{ flex: '1 1 110px', minWidth: 100 }}
+                      disabled={!row.active || user?.role !== 'owner'}
+                      value={row.startTime}
+                      onChange={(event) => updateDay(row.dayOfWeek, { startTime: event.target.value })}
+                    />
+                    <span style={{ color: 'var(--text-muted)', fontSize: 12, flexShrink: 0 }}>–</span>
+                    <input
+                      className="form-input"
+                      type="time"
+                      style={{ flex: '1 1 110px', minWidth: 100 }}
+                      disabled={!row.active || user?.role !== 'owner'}
+                      value={row.endTime}
+                      onChange={(event) => updateDay(row.dayOfWeek, { endTime: event.target.value })}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

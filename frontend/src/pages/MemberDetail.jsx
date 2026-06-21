@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ClipboardList, Dumbbell, Star, Ticket, X } from 'lucide-react';
 import api from '../api/client';
 
 const statusBadge = {
@@ -8,7 +9,7 @@ const statusBadge = {
   expired: <span className="badge badge-red">Hết hạn</span>,
   cancelled: <span className="badge badge-gray">Đã hủy</span>,
 };
-const paymentLabel = { cash: '💵 Tiền mặt', bank_transfer: '🏦 Chuyển khoản', e_wallet: '📱 Ví điện tử' };
+const paymentLabel = { cash: 'Tiền mặt', bank_transfer: 'Chuyển khoản', e_wallet: 'Ví điện tử' };
 const fmtCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
 export default function MemberDetail() {
@@ -64,7 +65,7 @@ export default function MemberDetail() {
       </div>
 
       <div className="page-body">
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20 }}>
+        <div className="member-detail-grid">
           {/* Left — Profile card */}
           <div>
             <div className="card" style={{ textAlign: 'center', marginBottom: 16 }}>
@@ -82,7 +83,7 @@ export default function MemberDetail() {
             </div>
 
             <div className="card">
-              <div className="card-title">📋 Thông tin cá nhân</div>
+              <div className="card-title"><ClipboardList size={14} /> Thông tin cá nhân</div>
               {[
                 { label: 'SĐT', val: member.user?.phone || '—' },
                 { label: 'Ngày sinh', val: member.user?.dob || '—' },
@@ -98,7 +99,7 @@ export default function MemberDetail() {
             {/* Active Subscription */}
             {activeSub && (
               <div className="card" style={{ marginTop: 16, borderColor: 'rgba(34,197,94,0.3)' }}>
-                <div className="card-title">🎫 Gói đang tập</div>
+                <div className="card-title"><Ticket size={14} /> Gói đang tập</div>
                 <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{activeSub.package?.name}</div>
                 {activeSub.endDate && (
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -130,15 +131,15 @@ export default function MemberDetail() {
           <div>
             <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-card)', borderRadius: 10, padding: 4, width: 'fit-content', border: '1px solid var(--border)' }}>
               {[
-                { id: 'info', label: '📝 Gói tập' },
-                { id: 'logs', label: '🏃 Lịch sử tập' },
-                { id: 'feedback', label: '⭐ Phản hồi' },
+                { id: 'info',     label: 'Gói tập',     icon: Ticket },
+                { id: 'logs',     label: 'Lịch sử tập', icon: Dumbbell },
+                { id: 'feedback', label: 'Phản hồi',    icon: Star },
               ].map(t => (
                 <button key={t.id}
                   className={`btn btn-sm ${tab === t.id ? 'btn-primary' : 'btn-ghost'}`}
                   style={{ border: 'none' }}
                   onClick={() => setTab(t.id)}>
-                  {t.label}
+                  {t.icon && <t.icon size={13} />} {t.label}
                 </button>
               ))}
             </div>
@@ -147,7 +148,7 @@ export default function MemberDetail() {
               <div className="table-wrap">
                 <div className="table-header"><span className="table-title">Lịch sử đăng ký gói</span></div>
                 {member.subscriptions?.length === 0 ? (
-                  <div className="empty-state"><div className="empty-state-icon">🎫</div><div className="empty-state-text">Chưa có gói tập nào</div></div>
+                  <div className="empty-state"><div className="empty-state-icon"><Ticket size={36} /></div><div className="empty-state-text">Chưa có gói tập nào</div></div>
                 ) : (
                   <table>
                     <thead><tr><th>Gói tập</th><th>Bắt đầu</th><th>Kết thúc</th><th>Thanh toán</th><th>Số tiền</th><th>Trạng thái</th></tr></thead>
@@ -172,7 +173,7 @@ export default function MemberDetail() {
               <div className="table-wrap">
                 <div className="table-header"><span className="table-title">Lịch sử tập luyện</span></div>
                 {member.trainingLogs?.length === 0 ? (
-                  <div className="empty-state"><div className="empty-state-icon">🏃</div><div className="empty-state-text">Chưa có lịch sử check-in</div></div>
+                  <div className="empty-state"><div className="empty-state-icon"><Dumbbell size={36} /></div><div className="empty-state-text">Chưa có lịch sử check-in</div></div>
                 ) : (
                   <table>
                     <thead><tr><th>Ngày</th><th>Check-in</th><th>Check-out</th><th>Ghi chú</th></tr></thead>
@@ -195,7 +196,7 @@ export default function MemberDetail() {
               <div className="table-wrap">
                 <div className="table-header"><span className="table-title">Phản hồi của hội viên</span></div>
                 {member.feedbacks?.length === 0 ? (
-                  <div className="empty-state"><div className="empty-state-icon">⭐</div><div className="empty-state-text">Chưa có phản hồi</div></div>
+                  <div className="empty-state"><div className="empty-state-icon"><Star size={36} /></div><div className="empty-state-text">Chưa có phản hồi</div></div>
                 ) : (
                   <table>
                     <thead><tr><th>Ngày</th><th>Loại</th><th>Đánh giá</th><th>Bình luận</th></tr></thead>
@@ -204,7 +205,7 @@ export default function MemberDetail() {
                         <tr key={f.id}>
                           <td style={{ fontSize: 12 }}>{new Date(f.createdAt).toLocaleDateString('vi-VN')}</td>
                           <td>{f.targetType}</td>
-                          <td>{'⭐'.repeat(f.rating)}</td>
+                          <td>{Array.from({length: f.rating}, (_, i) => <Star key={i} size={12} fill="#f59e0b" stroke="#f59e0b" />)}</td>
                           <td style={{ fontSize: 13 }}>{f.comment || '—'}</td>
                         </tr>
                       ))}
@@ -222,8 +223,8 @@ export default function MemberDetail() {
         <div className="modal-overlay" onClick={() => setShowSubModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span className="modal-title">🎫 Đăng ký gói tập</span>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowSubModal(false)}>✕</button>
+              <span className="modal-title">Đăng ký gói tập</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowSubModal(false)}><X size={18} /></button>
             </div>
             <form onSubmit={e => { e.preventDefault(); setSubError(''); if (!subForm.packageId) { setSubError('Chọn gói tập'); return; } registerSub.mutate({ ...subForm, memberId: parseInt(id), packageId: parseInt(subForm.packageId) }); }}>
               <div className="modal-body">
@@ -248,9 +249,9 @@ export default function MemberDetail() {
                   <div className="form-group">
                     <label className="form-label">Phương thức thanh toán</label>
                     <select className="form-select" value={subForm.paymentMethod} onChange={e => setSubForm(f => ({ ...f, paymentMethod: e.target.value }))}>
-                      <option value="cash">💵 Tiền mặt</option>
-                      <option value="bank_transfer">🏦 Chuyển khoản</option>
-                      <option value="e_wallet">📱 Ví điện tử</option>
+                      <option value="cash">Tiền mặt (tại quầy)</option>
+                      <option value="bank_transfer">Chuyển khoản</option>
+                      <option value="e_wallet">Ví điện tử</option>
                     </select>
                   </div>
                 </div>
@@ -274,7 +275,7 @@ export default function MemberDetail() {
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={() => setShowSubModal(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary" disabled={registerSub.isPending}>
-                  {registerSub.isPending ? 'Đang xử lý...' : '✓ Xác nhận đăng ký'}
+                  {registerSub.isPending ? 'Đang xử lý...' : 'Xác nhận đăng ký'}
                 </button>
               </div>
             </form>

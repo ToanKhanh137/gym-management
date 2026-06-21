@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Crown, Dumbbell, Calendar, Ticket, X, Pencil } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -85,8 +86,8 @@ export default function Packages() {
                   <span className="badge badge-red" style={{ position: 'absolute', top: 12, right: 12 }}>Đã tắt</span>
                 )}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                  <div style={{ fontSize: 32 }}>
-                    {pkg.type === 'vip' ? '👑' : pkg.type === 'pt' ? '💪' : pkg.type === 'yearly' ? '📅' : '🎫'}
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {pkg.type === 'vip' ? <Crown size={20} color="#f59e0b" /> : pkg.type === 'pt' ? <Dumbbell size={20} color="#a78bfa" /> : pkg.type === 'yearly' ? <Calendar size={20} color="#00d4ff" /> : <Ticket size={20} color="var(--primary)" />}
                   </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{pkg.name}</div>
@@ -99,8 +100,8 @@ export default function Packages() {
                 </div>
 
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-                  {pkg.durationDays && `⏱ ${pkg.durationDays} ngày`}
-                  {pkg.totalSessions && `🎯 ${pkg.totalSessions} buổi`}
+                  {pkg.durationDays && `${pkg.durationDays} ngày`}
+                  {pkg.totalSessions && `${pkg.totalSessions} buổi`}
                 </div>
 
                 {pkg.description && (
@@ -109,7 +110,7 @@ export default function Packages() {
 
                 {isOwner && (
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(pkg)}>✏️ Sửa</button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(pkg)}><Pencil size={13} /> Sửa</button>
                     {pkg.isActive && (
                       <button className="btn btn-danger btn-sm"
                         onClick={() => { if (confirm('Tắt gói tập này?')) deactivate.mutate(pkg.id); }}>
@@ -128,8 +129,8 @@ export default function Packages() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span className="modal-title">{editPkg ? '✏️ Sửa gói tập' : '+ Tạo gói tập mới'}</span>
-              <button className="btn btn-ghost btn-icon" onClick={closeModal}>✕</button>
+              <span className="modal-title">{editPkg ? 'Sửa gói tập' : '+ Tạo gói tập mới'}</span>
+              <button className="btn btn-ghost btn-icon" onClick={closeModal}><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
@@ -171,7 +172,7 @@ export default function Packages() {
               <div className="modal-footer">
                 <button type="button" className="btn btn-ghost" onClick={closeModal}>Hủy</button>
                 <button type="submit" className="btn btn-primary" disabled={save.isPending}>
-                  {save.isPending ? 'Đang lưu...' : '✓ Lưu gói tập'}
+                  {save.isPending ? 'Đang lưu...' : 'Lưu gói tập'}
                 </button>
               </div>
             </form>

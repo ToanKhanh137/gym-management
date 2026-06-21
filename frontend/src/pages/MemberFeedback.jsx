@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Star, Send } from 'lucide-react';
+import { Star, Send, CheckCircle2 } from 'lucide-react';
 import api from '../api/client';
 
 const TARGET_OPTIONS = [
@@ -68,8 +68,8 @@ export default function MemberFeedback() {
           <div className="table-wrap" style={{ padding:'28px 28px 24px' }}>
             <h2 style={{ fontSize:17, fontWeight:600, marginBottom:20 }}>Đánh giá dịch vụ</h2>
             {success && (
-              <div className="alert" style={{ background:'rgba(34,197,94,0.12)', color:'var(--accent-green, #22c55e)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:8, padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>
-                ✅ Cảm ơn bạn đã gửi phản hồi!
+              <div className="alert alert-success" style={{ marginBottom: 16 }}>
+                <CheckCircle2 size={16} /> Cảm ơn bạn đã gửi phản hồi!
               </div>
             )}
             {error && <div className="alert alert-error" style={{ marginBottom:16 }}>{error}</div>}

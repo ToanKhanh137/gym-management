@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, X, Edit3, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, X, Edit3, ToggleLeft, ToggleRight, Users } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -82,7 +82,7 @@ export default function Users() {
             <div className="loading-spinner"><div className="spinner"/> Đang tải...</div>
           ) : filtered.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon" style={{ fontSize:36, opacity:0.3 }}>👥</div>
+              <div className="empty-state-icon" style={{ fontSize:36, opacity:0.3 }}><Users size={36} /></div>
               <div className="empty-state-text">Không có nhân sự nào</div>
             </div>
           ) : (
