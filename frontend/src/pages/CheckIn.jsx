@@ -388,8 +388,8 @@ export default function CheckIn() {
 
       {/* QR Scanner Modal */}
       {showQRScanner && (
-        <div className="modal-overlay" onClick={() => { setShowQRScanner(false); setCameraActive(false); setScannedCodeInput(''); }}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
+        <div className="modal-overlay" onClick={() => { setShowQRScanner(false); setCameraActive(false); setScannedCodeInput(''); }} style={{ zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480, margin: 'auto' }}>
             <div className="modal-header">
               <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <QrCode size={18} color="var(--primary)" /> Quét mã QR Hội viên
@@ -402,7 +402,7 @@ export default function CheckIn() {
                 position: 'relative',
                 width: '100%',
                 aspectRatio: '1',
-                maxHeight: 250,
+                maxHeight: 320,
                 background: '#090a0f',
                 border: '2px solid var(--border)',
                 borderRadius: 8,
