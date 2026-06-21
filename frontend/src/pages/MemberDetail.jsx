@@ -42,6 +42,25 @@ export default function MemberDetail() {
     onSuccess: () => qc.invalidateQueries(['member', id]),
   });
 
+  const updateMember = useMutation({
+    mutationFn: (data) => api.patch(`/members/${id}`, data),
+    onSuccess: () => {
+      qc.invalidateQueries(['member', id]);
+      alert('Đã cập nhật mật khẩu hội viên thành công!');
+    },
+    onError: (e) => alert(e.response?.data?.error || 'Lỗi cập nhật'),
+  });
+
+  const handleResetPassword = () => {
+    const newPwd = prompt('Nhập mật khẩu mới cho hội viên (tối thiểu 6 ký tự):');
+    if (newPwd === null) return; // Hủy
+    if (newPwd.trim().length < 6) {
+      alert('Mật khẩu phải từ 6 ký tự trở lên!');
+      return;
+    }
+    updateMember.mutate({ password: newPwd.trim() });
+  };
+
   if (isLoading) return <div className="loading-spinner"><div className="spinner" /> Đang tải...</div>;
   if (!member) return <div className="page-body"><div className="alert alert-error">Không tìm thấy hội viên</div></div>;
 
@@ -94,6 +113,14 @@ export default function MemberDetail() {
                   <span>{r.val}</span>
                 </div>
               ))}
+              <button 
+                type="button" 
+                className="btn btn-ghost btn-sm w-full" 
+                style={{ marginTop: 12, justifyContent: 'center', fontSize: 12, color: 'var(--text-muted)' }}
+                onClick={handleResetPassword}
+              >
+                🔒 Đổi mật khẩu tài khoản
+              </button>
             </div>
 
             {/* Active Subscription */}

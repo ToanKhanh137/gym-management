@@ -48,7 +48,12 @@ export default function Users() {
       if (!form.password || form.password.length < 6) { setFormError('Mật khẩu tối thiểu 6 ký tự'); return; }
       createUser.mutate(form);
     } else {
-      updateUser.mutate({ id: editUser.id, data: { name: form.name, phone: form.phone } });
+      const data = { name: form.name, phone: form.phone };
+      if (form.password) {
+        if (form.password.length < 6) { setFormError('Mật khẩu mới tối thiểu 6 ký tự'); return; }
+        data.password = form.password;
+      }
+      updateUser.mutate({ id: editUser.id, data });
       closeModal();
     }
   };
@@ -164,12 +169,10 @@ export default function Users() {
                     <label className="form-label">Email *</label>
                     <input className="form-input" type="email" required value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} disabled={!!editUser}/>
                   </div>
-                  {!editUser && (
-                    <div className="form-group">
-                      <label className="form-label">Mật khẩu *</label>
-                      <input className="form-input" type="password" placeholder="Tối thiểu 6 ký tự" required value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))}/>
-                    </div>
-                  )}
+                  <div className="form-group">
+                    <label className="form-label">{editUser ? 'Mật khẩu mới' : 'Mật khẩu *'}</label>
+                    <input className="form-input" type="password" placeholder={editUser ? "Bỏ trống nếu giữ nguyên" : "Tối thiểu 6 ký tự"} required={!editUser} value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))}/>
+                  </div>
                   <div className="form-group">
                     <label className="form-label">Số điện thoại</label>
                     <input className="form-input" placeholder="09xxxxxxxx" value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))}/>

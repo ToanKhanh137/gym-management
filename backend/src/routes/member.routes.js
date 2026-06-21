@@ -153,18 +153,27 @@ router.post('/', authenticate, authorize('owner', 'staff'), async (req, res) => 
 router.patch('/:id', authenticate, authorize('owner', 'staff'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { name, phone, dob, occupation } = req.body;
+    const { name, phone, dob, occupation, password } = req.body;
 
     const member = await prisma.member.findUnique({ where: { id } });
     if (!member) return res.status(404).json({ error: 'Member not found' });
 
+    const userUpdateData = { name, phone, dob };
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      }
+      userUpdateData.passwordHash = await bcrypt.hash(password, 10);
+    }
+
     await prisma.$transaction([
-      prisma.user.update({ where: { id: member.userId }, data: { name, phone, dob } }),
+      prisma.user.update({ where: { id: member.userId }, data: userUpdateData }),
       prisma.member.update({ where: { id }, data: { occupation } }),
     ]);
 
     res.json({ message: 'Member updated' });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });

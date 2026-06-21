@@ -62,10 +62,16 @@ router.patch('/:id', authenticate, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { name, phone, dob, isActive } = req.body;
+    const { name, phone, dob, isActive, password } = req.body;
     const data = { name, phone, dob };
     if (req.user.role === 'owner' && typeof isActive === 'boolean') {
       data.isActive = isActive;
+    }
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      }
+      data.passwordHash = await bcrypt.hash(password, 10);
     }
 
     const user = await prisma.user.update({
@@ -74,7 +80,8 @@ router.patch('/:id', authenticate, async (req, res) => {
       select: { id: true, name: true, email: true, role: true, phone: true, isActive: true },
     });
     res.json(user);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });
