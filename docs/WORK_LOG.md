@@ -238,7 +238,17 @@
 ### Tổng kết ngày 21/06
 - ✅ Đã làm: Hoàn thiện unit/API test, áp dụng migration Neon và smoke test giao diện thành công với cả 4 role.
 - ⬜ Chưa làm: Lập bảng UT chi tiết từng test case và hoàn thiện bộ tài liệu chính thức RA/AD/DD/PP/GD/UT.
-- 🔜 Tiếp theo: Ghi 27 test case vào bảng UT và bổ sung ảnh bằng chứng kiểm thử.
+- 🔜 Tiếp theo: Ghi 29 test case vào bảng UT và bổ sung ảnh bằng chứng kiểm thử.
+
+### Buổi chiều — Bổ sung tính năng nâng cao
+- `[16:20]` Cường — Thêm **biểu đồ tần suất tập luyện 30 ngày** (contribution grid kiểu GitHub) vào trang `/my-training` của hội viên; mỗi ô đại diện 1 ngày, sáng = đã tập, tối = không tập, hover xem ngày cụ thể.
+- `[16:22]` Cường — Thêm **Mã QR check-in cá nhân** vào trang hồ sơ hội viên (`/profile`): hiển thị QR 110px, bấm để phóng to 220px trong modal; QR encode `memberCode` dùng màu sắc đồng bộ theme.
+- `[16:25]` Cường — Thêm **tính năng Xuất báo cáo doanh thu ra Excel (CSV)** tại trang `/reports`: file UTF-8 BOM (không lỗi font), gồm danh sách giao dịch chi tiết + khối tổng hợp cuối file, tên file theo khoảng ngày.
+- `[16:28]` Cường — Fix bộ lọc trạng thái thiết bị: đồng bộ giá trị dropdown Frontend (`damaged` thay `broken`) với enum Backend.
+- `[16:32]` Cường — Thêm **nút Quét mã QR** trên trang check-in (`/checkin`): mở modal camera thực (`html5-qrcode`), hiển thị viewfinder với laser animation và corner brackets; camera chỉ khởi động khi bấm "Bật Camera", dừng hẳn khi đóng modal hoặc quét thành công.
+- `[16:33]` Cường — Fix backend tìm kiếm hội viên: bổ sung OR tìm theo `memberCode` (bảng Member) cạnh name/email/phone (bảng User), giúp quét QR tự điền đúng hội viên.
+- `[16:45]` Cường — Fix camera stream không tắt đúng cách: refactor dùng `useRef` lưu instance `Html5Qrcode`, đặt cleanup `stopCamera()` trong return của `useEffect` thay vì trong setTimeout.
+- `[16:53]` Cường — Cập nhật `DOC_NOTES.md` và `WORK_LOG.md` theo các tính năng vừa bổ sung.
 
 ---
 

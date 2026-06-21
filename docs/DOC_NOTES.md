@@ -62,11 +62,13 @@
 ### UC-05: Ghi nhận lịch sử tập luyện (Check-in)
 - Actor chính: Nhân viên / PT
 - Luồng chính:
-  1. Tìm hội viên bằng tên/email/SĐT (live search)
+  1. Tìm hội viên bằng **tên/email/SĐT/mã hội viên** (live search), hoặc bấm **"Quét mã QR"** → mở modal camera → đưa thẻ QR của hội viên vào → hệ thống tự động tìm và điền thông tin
   2. Chọn gói tập đang active
   3. POST `/api/training-logs` → ghi `checkedInAt`
   4. Khi ra về: PATCH `/api/training-logs/:id/checkout` → ghi `checkedOutAt`
-- UI: Trang `/checkin` — dropdown tìm kiếm real-time, bảng log hôm nay refresh 10 giây/lần
+- Exception: Không tìm thấy hội viên theo mã QR → thông báo lỗi; camera không được cấp quyền → hiển thị hướng dẫn; nhập thủ công mã hội viên làm phương án thay thế
+- UI: Trang `/checkin` — dropdown tìm kiếm real-time (hỗ trợ tìm theo memberCode), nút Quét QR mở modal camera với khung ngắm + laser scan animation; bảng log hôm nay refresh 10 giây/lần
+- Ghi chú kỹ thuật: Tìm kiếm backend hỗ trợ OR theo `memberCode` (Member model) và `name/email/phone` (User model); camera dùng thư viện `html5-qrcode`, chỉ khởi động khi người dùng bấm nút "Bật Camera", dừng hẳn khi đóng modal hoặc quét thành công
 
 ### UC-06: Quản lý thiết bị phòng tập
 - Actor chính: Nhân viên / Chủ phòng tập
@@ -91,8 +93,11 @@
 
 ### UC-08: Xem báo cáo thống kê doanh thu
 - Actor chính: Chủ phòng tập
-- Luồng chính: Chọn khoảng ngày, GET `/api/reports/revenue` → hiển thị tổng, phân bổ theo gói
-- UI: Trang `/reports` — KPI cards + bar chart + filter ngày 
+- Luồng chính:
+  1. Chọn khoảng ngày, GET `/api/reports/revenue` → hiển thị tổng, phân bổ theo gói
+  2. (Tuỳ chọn) Bấm **"Xuất Excel"** → tải file `.csv` UTF-8 BOM gồm: danh sách giao dịch chi tiết + khối tổng hợp cuối file
+- UI: Trang `/reports` — KPI cards + bar chart + filter ngày + nút Xuất Excel
+- Ghi chú: File CSV có tên động theo khoảng ngày đã chọn, mở trực tiếp bằng Excel không bị lỗi font tiếng Việt
 
 ### UC-09: Gửi phản hồi / đánh giá dịch vụ
 - Actor chính: Hội viên
@@ -123,8 +128,9 @@
 - Actor chính: Hội viên
 - Luồng chính:
   - Gói tập: GET `/api/subscriptions` (auto-filter theo memberId) → hero card + cảnh báo sắp hết hạn
-  - Lịch sử tập: GET `/api/training-logs` (auto-filter theo memberId) → bảng check-in/out + KPI
-- UI: `/my-subscription` + `/my-training` 
+  - Hồ sơ: Xem mã QR cá nhân trong trang `/profile` — bấm để **phóng to** hiển thị QR 220×220px dễ quét; QR encode `memberCode` duy nhất của hội viên
+  - Lịch sử tập: GET `/api/training-logs` (auto-filter theo memberId) → bảng check-in/out + KPI + **biểu đồ tần suất 30 ngày** (contribution grid: ô sáng = có tập, ô tối = không tập, hover xem ngày cụ thể)
+- UI: `/my-subscription` + `/my-training` + `/profile`
 
 ### UC-13: Xem tổng hợp Phản hồi (Owner/Staff)
 - Actor chính: Chủ phòng tập / Nhân viên
@@ -350,7 +356,7 @@
 - **Cách ly database:** mock Prisma Client, không kết nối hoặc thay đổi dữ liệu Neon.
 - **Kiến trúc hỗ trợ test:** tách cấu hình Express sang `src/app.js`; `src/index.js` chỉ nạp biến môi trường và mở cổng server.
 - **Phạm vi test:** đăng nhập/xác thực, RBAC Dashboard và báo cáo, gia hạn theo ngày hoặc số buổi, check-in/checkout, feedback, maintenance, lịch Staff và promotion.
-- **Kết quả:** 6 test files, 27 test cases đều pass.
+- **Kết quả:** 6 test files, 29 test cases đều pass.
 - **Coverage:** statements 34.43%, branches 26.91%, functions 22.22%, lines 36.27%. Đây là coverage trọng tâm nghiệp vụ, chưa phải coverage toàn bộ các CRUD route.
 
 ### Các nhóm test
