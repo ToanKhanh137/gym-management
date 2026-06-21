@@ -193,12 +193,61 @@
 
 ---
 
+## 20/06/2026 — Bổ sung chức năng theo yêu cầu đề bài
+
+### Buổi tối
+- `[22:32]` Cường — Fix quyền Dashboard: cho Staff/PT xem KPI tổng quan nhưng chỉ Owner nhận dữ liệu doanh thu.
+- `[22:34]` Cường — Thiết kế schema và migration cho lịch sử gia hạn, xử lý feedback, lịch nhân viên và khuyến mãi.
+- `[22:36]` Cường — Thêm chức năng gia hạn gói: kiểm tra subscription, ghi nhận thanh toán, cộng thời hạn/số buổi và lưu lịch sử giao dịch bằng transaction.
+- `[22:38]` Cường — Cập nhật báo cáo doanh thu để cộng cả thanh toán đăng ký mới và thanh toán gia hạn.
+- `[22:40]` Cường — Thêm chức năng Staff/Owner xử lý phản hồi, lưu nội dung trả lời, người xử lý và trạng thái resolved.
+- `[22:42]` Cường — Thêm báo cáo theo khoảng ngày: hội viên mới, đăng ký mới, lượt gia hạn và số buổi đã sử dụng.
+- `[22:44]` Cường — Thêm quản lý lịch làm việc Staff: Owner chỉnh lịch theo tuần, Staff xem lịch của mình.
+- `[22:46]` Cường — Thêm quản lý khuyến mãi và dữ liệu mẫu; Owner tạo/sửa/tắt, hội viên xem ưu đãi còn hiệu lực.
+- `[22:48]` Cường — Bổ sung routing, menu và giao diện cho gia hạn, xử lý feedback, lịch nhân viên, khuyến mãi và báo cáo mới.
+- `[22:50]` Cường — Cập nhật README, DOC_NOTES và WORK_LOG theo các chức năng vừa hoàn thành.
+- `[22:52]` Cường — Chạy Prisma validate/generate, backend syntax check, frontend ESLint và production build; tất cả đều pass.
+
+### Tổng kết ngày 20/06
+- ✅ Đã làm: Hoàn thiện các chức năng còn thiếu theo đề bài và kiểm tra build/lint thành công.
+- ⬜ Chưa làm: Unit test và bộ tài liệu chính thức RA/AD/DD/PP/GD/UT.
+- 🔜 Tiếp theo: Áp dụng migration lên database test, chạy smoke test các luồng mới và viết unit test.
+
+---
+
+## 21/06/2026 — Bổ sung unit/API test Backend
+
+### Buổi sáng
+- `[00:02]` Cường — Tách cấu hình Express sang `src/app.js` để Supertest gọi API trực tiếp mà không cần mở server.
+- `[00:04]` Cường — Cài và cấu hình Vitest, Supertest, V8 Coverage; thêm các lệnh `test`, `test:watch`, `test:coverage`.
+- `[00:06]` Cường — Tạo Prisma mock và JWT helper để test độc lập, không đọc hoặc sửa dữ liệu Neon.
+- `[00:08]` Cường — Viết test đăng nhập, xác thực token, trạng thái tài khoản và phân quyền API.
+- `[00:10]` Cường — Viết test Dashboard Staff không nhận doanh thu, Dashboard Owner có doanh thu và báo cáo đăng ký/gia hạn.
+- `[00:12]` Cường — Viết test gia hạn gói theo thời hạn/số buổi, trạng thái subscription và quyền Member.
+- `[00:14]` Cường — Viết test check-in/checkout, chống check-in đang mở và checkout lặp.
+- `[00:16]` Cường — Viết test xử lý feedback, maintenance, lịch Staff và promotion.
+- `[00:18]` Cường — Chạy 27 test cases trên 6 test files; tất cả đều pass.
+- `[00:20]` Cường — Chạy coverage và cập nhật README, DOC_NOTES, WORK_LOG với công cụ, phạm vi và kết quả kiểm thử.
+- `[11:18]` Cường — Tạo `backend/.env` cục bộ bằng cấu hình Neon/JWT của nhóm và kiểm tra file đã được `.gitignore` bỏ qua.
+- `[11:20]` Cường — Validate Prisma schema, generate Prisma Client và chạy lại 27/27 unit/API test thành công.
+- `[11:22]` Cường — Áp dụng migration chức năng mới lên Neon bằng `prisma migrate deploy`, không seed hoặc xóa dữ liệu hiện có.
+- `[11:25]` Cường — Viết `docs/TEST_GUIDE.md` hướng dẫn quy trình test chuẩn và manual test chi tiết theo Owner, Staff, PT, Member.
+- `[11:40]` Cường — Chạy backend/frontend cục bộ, kiểm tra API health và giao diện hoạt động thành công.
+- `[11:45]` Cường — Đăng nhập, kiểm tra nhanh chức năng theo cả 4 role Owner, Staff, PT, Member; kết quả đều hoạt động.
+
+### Tổng kết ngày 21/06
+- ✅ Đã làm: Hoàn thiện unit/API test, áp dụng migration Neon và smoke test giao diện thành công với cả 4 role.
+- ⬜ Chưa làm: Lập bảng UT chi tiết từng test case và hoàn thiện bộ tài liệu chính thức RA/AD/DD/PP/GD/UT.
+- 🔜 Tiếp theo: Ghi 27 test case vào bảng UT và bổ sung ảnh bằng chứng kiểm thử.
+
+---
+
 ## 📌 CONTEXT CHO AI AGENTS
 > Đọc phần này trước khi bắt đầu làm việc
 
 **Trạng thái hiện tại (cập nhật bởi nhóm):**
-- Đang làm: _(nhóm điền)_
-- Vừa xong: _(nhóm điền)_
-- Cần tiếp theo: _(nhóm điền)_
-- Tech stack đã chọn: _(nhóm điền)_
-- Repo GitHub: _(nhóm điền)_
+- Đang làm: Chuẩn bị bảng UT và tài liệu chính thức.
+- Vừa xong: Migration Neon, 27/27 unit/API test và smoke test 4 role đều pass.
+- Cần tiếp theo: Ghi từng test case vào bảng UT và bổ sung ảnh bằng chứng.
+- Tech stack đã chọn: React + Vite, Express, Prisma, Neon PostgreSQL, JWT.
+- Repo GitHub: `https://github.com/ToanKhanh137/gym-management.git`

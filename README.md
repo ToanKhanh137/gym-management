@@ -10,6 +10,7 @@
 - [Tech Stack](#tech-stack)
 - [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
 - [Cài đặt và chạy](#cài-đặt-và-chạy)
+- [Kiểm thử Backend](#kiểm-thử-backend)
 - [Tài khoản test](#tài-khoản-test)
 - [API Endpoints](#api-endpoints)
 - [Cấu trúc thư mục](#cấu-trúc-thư-mục)
@@ -109,6 +110,9 @@ npm run dev              # Chạy backend (nodemon, tự reload khi sửa code)
 npm run db:migrate       # Áp dụng migration mới lên Neon
 npm run db:seed          # Seed lại dữ liệu mẫu (sẽ ghi đè data hiện tại!)
 npm run db:studio        # Mở Prisma Studio — GUI xem DB trên browser
+npm test                 # Chạy unit/API test một lần
+npm run test:watch       # Chạy test ở chế độ theo dõi
+npm run test:coverage    # Chạy test và xuất báo cáo coverage
 
 # --- Frontend ---
 npm run dev              # Chạy frontend dev server
@@ -116,6 +120,24 @@ npm run build            # Build production
 npm run preview          # Preview bản build
 npm run lint             # Kiểm tra lỗi ESLint
 ```
+
+---
+
+## Kiểm thử Backend
+
+### Testing Tools
+
+- **Vitest:** test runner và mock Prisma.
+- **Supertest:** gửi HTTP request trực tiếp vào Express app, không cần mở server hoặc kết nối Neon.
+- **V8 Coverage:** đo statement, branch, function và line coverage.
+
+```bash
+cd backend
+npm test
+npm run test:coverage
+```
+
+Bộ test tập trung vào đăng nhập/phân quyền, Dashboard theo vai trò, gia hạn gói tập, check-in/checkout, xử lý phản hồi, bảo trì thiết bị, lịch Staff và khuyến mãi. Prisma được mock nên test không đọc hoặc sửa dữ liệu Neon.
 
 ---
 
@@ -154,6 +176,7 @@ Base URL: `http://localhost:3001/api`
 | DELETE | `/packages/:id` | Xóa gói tập (soft) | owner |
 | GET | `/subscriptions` | Danh sách đăng ký | owner, staff, pt |
 | POST | `/subscriptions` | Đăng ký gói tập | owner, staff |
+| POST | `/subscriptions/:id/renew` | Gia hạn và ghi giao dịch thanh toán | owner, staff |
 | PATCH | `/subscriptions/:id/cancel` | Hủy gói tập | owner, staff |
 | GET | `/rooms` | Danh sách phòng | Tất cả |
 | POST | `/rooms` | Tạo phòng | owner, staff |
@@ -166,13 +189,20 @@ Base URL: `http://localhost:3001/api`
 | PATCH | `/training-logs/:id/checkout` | Check-out | owner, staff, pt |
 | GET | `/feedbacks` | Danh sách phản hồi | owner, staff |
 | POST | `/feedbacks` | Gửi phản hồi | member |
+| PATCH | `/feedbacks/:id/resolve` | Xử lý và trả lời phản hồi | owner, staff |
 | GET | `/maintenance` | Yêu cầu bảo trì | owner, staff |
 | POST | `/maintenance` | Báo cáo hỏng thiết bị | owner, staff |
 | PATCH | `/maintenance/:id/resolve` | Đánh dấu đã sửa | owner, staff |
-| GET | `/reports/dashboard` | Dashboard tổng quan | owner |
+| GET | `/reports/dashboard` | Dashboard tổng quan, ẩn doanh thu với staff/PT | owner, staff, pt |
 | GET | `/reports/revenue` | Báo cáo doanh thu | owner |
 | GET | `/reports/members-summary` | Tóm tắt hội viên | owner, staff |
-| GET | `/reports/staff-performance` | Hiệu suất nhân viên | owner |
+| GET | `/reports/registrations` | Hội viên mới, đăng ký, gia hạn, buổi tập | owner, staff |
+| GET | `/reports/performance` | Hiệu suất nhân viên | owner |
+| GET | `/staff-schedules` | Xem lịch làm việc nhân viên | owner, staff |
+| PUT | `/staff-schedules/:userId` | Cập nhật lịch làm việc nhân viên | owner |
+| GET | `/promotions` | Xem khuyến mãi đang áp dụng | Tất cả |
+| POST | `/promotions` | Tạo khuyến mãi | owner |
+| PATCH | `/promotions/:id` | Sửa/kích hoạt khuyến mãi | owner |
 
 ---
 

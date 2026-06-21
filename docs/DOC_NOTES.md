@@ -302,6 +302,33 @@
 | **Context / Provider** | `AuthContext.jsx` bao toàn bộ app | Global auth state, tránh prop drilling |
 | **Protected Route** | `ProtectedRoute.jsx` bao từng page | Guard route theo auth + role |
 | **Responsive Layout** | CSS breakpoint 768px — sidebar ↔ bottom nav | Desktop và mobile dùng cùng codebase |
+| **Transaction Script** | Gia hạn subscription: cập nhật gói + tạo `SubscriptionRenewal` | Đảm bảo cập nhật thời hạn và lịch sử thanh toán cùng thành công |
+
+---
+
+## 🛠️ CẬP NHẬT CHỨC NĂNG 20/06
+> Bổ sung các phần còn thiếu khi đối chiếu từng dòng yêu cầu đề bài.
+
+- **Gia hạn gói tập:** Owner/Staff chọn subscription chưa bị hủy, chọn phương thức thanh toán; hệ thống cộng `durationDays` hoặc `totalSessions`, kích hoạt lại gói hết hạn và tạo bản ghi `SubscriptionRenewal`.
+- **Lịch sử giao dịch gia hạn:** lưu ngày gia hạn, số tiền, phương thức thanh toán, người thực hiện, hạn cũ/hạn mới hoặc số buổi được cộng.
+- **Xử lý phản hồi:** Feedback có trạng thái `pending/resolved`, nội dung trả lời, người xử lý và thời gian xử lý; hội viên xem được kết quả.
+- **Báo cáo đăng ký/gia hạn:** lọc theo khoảng ngày và thống kê hội viên mới, đăng ký mới, lượt gia hạn, số buổi đã sử dụng; doanh thu cộng cả tiền đăng ký và tiền gia hạn.
+- **Lịch nhân viên:** Owner cập nhật ca làm theo thứ trong tuần; Staff xem lịch của tài khoản mình.
+- **Khuyến mãi:** Owner tạo/sửa/kích hoạt chương trình; Staff/Member xem chương trình đang còn hiệu lực.
+- **Fix quyền Dashboard:** Owner, Staff, PT đều truy cập được KPI; chỉ Owner nhận và thấy dữ liệu doanh thu.
+
+### Table: subscription_renewals
+- id, subscription_id, previous_end_date, new_end_date, added_sessions
+- payment_method, amount_paid, renewed_by_id, renewed_at
+
+### Cập nhật Table: feedbacks
+- status, response, resolved_at, resolved_by_id
+
+### Table: staff_schedules
+- id, user_id, day_of_week, start_time, end_time
+
+### Table: promotions
+- id, title, description, discount_percent, start_date, end_date, is_active
 
 ---
 
@@ -313,6 +340,26 @@
 - **Khả dụng:** Backend chạy local, DB cloud Neon (uptime ~99.9%)
 - **Khả năng mở rộng:** Cấu trúc route tách module, dễ thêm feature mới
 - **Tính nhất quán dữ liệu:** Dùng `prisma.$transaction()` cho các thao tác multi-step (check-in, bảo trì)
+
+---
+
+## 🧪 UNIT/API TEST 21/06
+> Dùng cho: UT — kiểm thử tập trung vào các luồng nghiệp vụ và phân quyền có rủi ro cao.
+
+- **Framework:** Vitest + Supertest; dùng V8 để đo coverage.
+- **Cách ly database:** mock Prisma Client, không kết nối hoặc thay đổi dữ liệu Neon.
+- **Kiến trúc hỗ trợ test:** tách cấu hình Express sang `src/app.js`; `src/index.js` chỉ nạp biến môi trường và mở cổng server.
+- **Phạm vi test:** đăng nhập/xác thực, RBAC Dashboard và báo cáo, gia hạn theo ngày hoặc số buổi, check-in/checkout, feedback, maintenance, lịch Staff và promotion.
+- **Kết quả:** 6 test files, 27 test cases đều pass.
+- **Coverage:** statements 34.43%, branches 26.91%, functions 22.22%, lines 36.27%. Đây là coverage trọng tâm nghiệp vụ, chưa phải coverage toàn bộ các CRUD route.
+
+### Các nhóm test
+- `auth.test.js`: validate đăng nhập, trạng thái tài khoản, đổi mật khẩu và token.
+- `access-report.test.js`: phân quyền, ẩn doanh thu với Staff và báo cáo đăng ký/gia hạn.
+- `subscription.test.js`: gia hạn gói theo thời hạn/số buổi, trạng thái gói và role.
+- `training-log.test.js`: kiểm tra quyền sở hữu subscription, check-in đang mở, checkout lặp và transaction.
+- `feedback-maintenance.test.js`: validate đánh giá, xử lý phản hồi, chống trùng phiếu bảo trì.
+- `schedule-promotion.test.js`: lịch làm việc Staff, validate giờ làm và điều kiện khuyến mãi.
 
 ---
 
@@ -337,6 +384,8 @@
 | Gói tập (Member) | `/my-subscription` | Member | ✅ Xong |
 | Lịch sử tập (Member) | `/my-training` | Member | ✅ Xong |
 | Gửi Phản hồi (Member) | `/feedback` | Member | ✅ Xong |
+| Lịch nhân viên | `/staff-schedule` | Owner, Staff | ✅ Xong |
+| Khuyến mãi | `/promotions` | Owner, Staff, Member | ✅ Xong |
 
 ---
 
