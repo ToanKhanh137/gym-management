@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { User, Ticket, Calendar, MessageSquare, Dumbbell } from 'lucide-react';
+import { User, Ticket, Calendar, MessageSquare, Dumbbell, X } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,6 +8,7 @@ const fmtCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', c
 
 export default function MemberProfile() {
   const { user } = useAuth();
+  const [zoomQR, setZoomQR] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['my-profile'],
@@ -43,9 +45,10 @@ export default function MemberProfile() {
                 <img 
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${profile.memberCode}&color=f05a28&bgcolor=15171e`} 
                   alt="QR Code Check-in" 
-                  style={{ width: 110, height: 110, borderRadius: 8, padding: 8, background: 'var(--bg-surface)', border: '1px solid var(--border)' }} 
+                  style={{ width: 110, height: 110, borderRadius: 8, padding: 8, background: 'var(--bg-surface)', border: '1px solid var(--border)', cursor: 'zoom-in' }} 
+                  onClick={() => setZoomQR(true)}
                 />
-                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Mã QR Check-in</span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Mã QR (Bấm để phóng to)</span>
               </div>
             </div>
 
@@ -133,6 +136,27 @@ export default function MemberProfile() {
           </div>
         </div>
       </div>
+
+      {/* Zoom QR Modal */}
+      {zoomQR && (
+        <div className="modal-overlay" onClick={() => setZoomQR(false)} style={{ zIndex: 9999 }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 320, padding: 24, textAlign: 'center' }}>
+            <div className="modal-header" style={{ borderBottom: 'none', padding: 0, justifyContent: 'flex-end', marginBottom: -10 }}>
+              <button className="btn btn-ghost btn-icon" onClick={() => setZoomQR(false)}><X size={16} /></button>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, marginTop: 4 }}>Mã QR Check-in</div>
+            <div style={{ background: '#15171e', padding: 16, borderRadius: 12, display: 'inline-block', border: '1px solid var(--border)' }}>
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${profile.memberCode}&color=f05a28&bgcolor=15171e`} 
+                alt="QR Code Enlarged" 
+                style={{ width: 220, height: 220, display: 'block', borderRadius: 8 }}
+              />
+            </div>
+            <div style={{ marginTop: 12, fontWeight: 600, fontSize: 16, color: 'var(--primary)', letterSpacing: 1 }}>{profile.memberCode}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Đưa mã này trước camera tại quầy để check-in nhanh</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

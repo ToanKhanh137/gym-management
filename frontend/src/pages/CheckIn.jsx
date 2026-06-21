@@ -16,6 +16,7 @@ export default function CheckIn() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [scannedCodeInput, setScannedCodeInput] = useState('');
   const [cameraError, setCameraError] = useState('');
+  const [cameraActive, setCameraActive] = useState(false);
 
   const { data: members = [] } = useQuery({
     queryKey: ['members', memberSearch],
@@ -68,7 +69,7 @@ export default function CheckIn() {
   };
 
   useEffect(() => {
-    if (!showQRScanner) {
+    if (!showQRScanner || !cameraActive) {
       setCameraError('');
       return;
     }
@@ -102,7 +103,7 @@ export default function CheckIn() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [showQRScanner]);
+  }, [showQRScanner, cameraActive]);
 
   const checkout = useMutation({
     mutationFn: ({ id, notes }) => api.patch(`/training-logs/${id}/checkout`, { notes }),
@@ -379,13 +380,13 @@ export default function CheckIn() {
 
       {/* QR Scanner Modal */}
       {showQRScanner && (
-        <div className="modal-overlay" onClick={() => { setShowQRScanner(false); setScannedCodeInput(''); }}>
+        <div className="modal-overlay" onClick={() => { setShowQRScanner(false); setCameraActive(false); setScannedCodeInput(''); }}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
             <div className="modal-header">
               <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <QrCode size={18} color="var(--primary)" /> Quét mã QR Hội viên
               </span>
-              <button className="btn btn-ghost btn-icon" onClick={() => { setShowQRScanner(false); setScannedCodeInput(''); }}><X size={16}/></button>
+              <button className="btn btn-ghost btn-icon" onClick={() => { setShowQRScanner(false); setCameraActive(false); setScannedCodeInput(''); }}><X size={16}/></button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {/* Viewfinder frame */}
@@ -404,7 +405,18 @@ export default function CheckIn() {
                 justifyContent: 'center',
                 flexDirection: 'column'
               }}>
-                {cameraError ? (
+                {!cameraActive ? (
+                  <div style={{ textAlign: 'center', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                    <QrCode size={40} style={{ opacity: 0.3 }} />
+                    <button 
+                      type="button" 
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setCameraActive(true)}
+                    >
+                      Bật Camera để quét
+                    </button>
+                  </div>
+                ) : cameraError ? (
                   <div style={{ padding: 20, textAlign: 'center', color: 'var(--accent-red)', fontSize: 13 }}>
                     {cameraError}
                   </div>
