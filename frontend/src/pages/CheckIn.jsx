@@ -17,6 +17,7 @@ export default function CheckIn() {
   const [scannedCodeInput, setScannedCodeInput] = useState('');
   const [cameraError, setCameraError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
+  const qrCodeRef = useRef(null);
 
   const { data: members = [] } = useQuery({
     queryKey: ['members', memberSearch],
@@ -51,14 +52,28 @@ export default function CheckIn() {
     enabled: showQRScanner,
   });
 
+  const stopCamera = () => {
+    if (qrCodeRef.current) {
+      const instance = qrCodeRef.current;
+      qrCodeRef.current = null;
+      if (instance.isScanning) {
+        instance.stop().then(() => instance.clear()).catch(() => {});
+      } else {
+        instance.clear();
+      }
+    }
+  };
+
   const handleSimulateScan = (memberCode) => {
     if (!memberCode) return;
     setError('');
+    stopCamera();
     api.get(`/members?search=${memberCode}`).then(res => {
       const found = res.data.find(m => m.memberCode === memberCode) || res.data[0];
       if (found) {
         selectMember(found);
         setShowQRScanner(false);
+        setCameraActive(false);
         setScannedCodeInput('');
       } else {
         setError('Không tìm thấy hội viên ứng với mã QR này');
@@ -70,39 +85,32 @@ export default function CheckIn() {
 
   useEffect(() => {
     if (!showQRScanner || !cameraActive) {
+      stopCamera();
       setCameraError('');
       return;
     }
 
     const timer = setTimeout(() => {
-      const html5QrCode = new Html5Qrcode("qr-reader-element");
+      const html5QrCode = new Html5Qrcode('qr-reader-element');
+      qrCodeRef.current = html5QrCode;
 
       html5QrCode.start(
-        { facingMode: "environment" },
+        { facingMode: 'environment' },
         { fps: 10, qrbox: 200 },
         (decodedText) => {
           handleSimulateScan(decodedText);
         },
-        (error) => {
-          // silent error
-        }
+        () => { /* silent frame errors */ }
       ).catch(err => {
-        console.error("Camera start error: ", err);
-        setCameraError("Không thể truy cập camera. Vui lòng kiểm tra quyền thiết bị.");
+        console.error('Camera start error:', err);
+        setCameraError('Không thể truy cập camera. Vui lòng kiểm tra quyền thiết bị.');
       });
-
-      return () => {
-        if (html5QrCode && html5QrCode.isScanning) {
-          html5QrCode.stop().then(() => {
-            html5QrCode.clear();
-          }).catch(err => {
-            console.error("Camera stop error: ", err);
-          });
-        }
-      };
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      stopCamera();
+    };
   }, [showQRScanner, cameraActive]);
 
   const checkout = useMutation({
