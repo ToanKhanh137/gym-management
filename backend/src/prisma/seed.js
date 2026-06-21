@@ -21,12 +21,10 @@ async function main() {
   await prisma.room.deleteMany({});
   await prisma.membershipPackage.deleteMany({});
   await prisma.promotion.deleteMany({});
-  
-  // Keep users except the base ones or clear all users and recreate
   await prisma.user.deleteMany({});
 
   // 2. CREATE SYSTEM ACCOUNTS
-  console.log('👥 Creating staff and owner accounts...');
+  console.log('👥 Creating staff, owner and PT accounts...');
   const saltRounds = 10;
   const ownerHash = await bcrypt.hash('owner123', saltRounds);
   const staffHash = await bcrypt.hash('staff123', saltRounds);
@@ -45,6 +43,9 @@ async function main() {
   const staff2 = await prisma.user.create({
     data: { name: 'Lê Hoàng Nam', email: 'staff2@gym.com', passwordHash: staffHash, role: 'staff', phone: '0977889900', dob: '1998-02-12' }
   });
+  const staff3 = await prisma.user.create({
+    data: { name: 'Phạm Minh Đức', email: 'staff3@gym.com', passwordHash: staffHash, role: 'staff', phone: '0971234567', dob: '1999-05-18' }
+  });
 
   // PTs
   const pt1User = await prisma.user.create({
@@ -59,6 +60,13 @@ async function main() {
   });
   const pt2 = await prisma.trainer.create({
     data: { userId: pt2User.id, speciality: 'Yoga & Pilates' }
+  });
+
+  const pt3User = await prisma.user.create({
+    data: { name: 'HLV Nguyễn Quốc Anh', email: 'pt3@gym.com', passwordHash: ptHash, role: 'pt', phone: '0934567890', dob: '1993-12-10' }
+  });
+  const pt3 = await prisma.trainer.create({
+    data: { userId: pt3User.id, speciality: 'Powerlifting & Strength Training' }
   });
 
   // 3. CREATE ROOMS
@@ -125,7 +133,13 @@ async function main() {
     { name: 'Nguyễn Tiến Đạt', email: 'dat.nguyen@gmail.com', phone: '0901112225', dob: '1994-07-30', occ: 'Thiết kế đồ họa' },
     { name: 'Vũ Thị Hương', email: 'huong.vu@outlook.com', phone: '0901112226', dob: '1997-09-02', occ: 'Giao dịch viên' },
     { name: 'Hoàng Văn Hải', email: 'hai.hoang@gmail.com', phone: '0901112227', dob: '1989-05-14', occ: 'Kỹ sư xây dựng' },
-    { name: 'Đặng Trung Kiên', email: 'kien.dang@student.edu.vn', phone: '0901112228', dob: '2003-01-22', occ: 'Sinh viên' }
+    { name: 'Đặng Trung Kiên', email: 'kien.dang@student.edu.vn', phone: '0901112228', dob: '2003-01-22', occ: 'Sinh viên' },
+    { name: 'Bùi Minh Tuấn', email: 'tuan.bui@gmail.com', phone: '0901112229', dob: '1992-02-14', occ: 'Lập trình viên' },
+    { name: 'Trần Minh Khoa', email: 'khoa.tran@yahoo.com', phone: '0901112230', dob: '1995-09-08', occ: 'Giáo viên' },
+    { name: 'Phan Thúy Hạnh', email: 'hanh.phan@gmail.com', phone: '0901112231', dob: '1991-04-12', occ: 'Marketing Specialist' },
+    { name: 'Lâm Chí Dũng', email: 'dung.lam@gmail.com', phone: '0901112232', dob: '1999-10-05', occ: 'Kỹ sư phần mềm' },
+    { name: 'Vũ Thành Long', email: 'long.vu@gmail.com', phone: '0901112233', dob: '1987-03-30', occ: 'Doanh nhân' },
+    { name: 'Ngô Gia Bảo', email: 'bao.ngo@student.edu.vn', phone: '0901112234', dob: '2004-11-20', occ: 'Sinh viên' }
   ];
 
   const members = [];
@@ -144,17 +158,32 @@ async function main() {
     const m = await prisma.member.create({
       data: {
         userId: u.id,
-        memberCode: `MEM00${i + 1}`,
+        memberCode: `MEM${String(i + 1).padStart(3, '0')}`,
         occupation: md.occ
       }
     });
     members.push(m);
   }
 
-  // 7. CREATE SUBSCRIPTIONS AND RENEWALS
+  // 7. CREATE SUBSCRIPTIONS AND RENEWALS (PAST & ACTIVE)
   console.log('💳 Creating subscriptions and payments...');
-  
-  // Member 1 (Nguyễn Văn A) - Gói 3 tháng (Active) - Đăng ký từ 2026-06-01
+
+  // Member 1 (Nguyễn Văn A)
+  // Gói quá khứ (Expired): 1 tháng từ 2026-04-15 đến 2026-05-15
+  await prisma.subscription.create({
+    data: {
+      memberId: members[0].id,
+      packageId: pkg1m.id,
+      startDate: '2026-04-15',
+      endDate: '2026-05-15',
+      status: 'expired',
+      paymentMethod: 'cash',
+      amountPaid: 600000,
+      paidAt: new Date('2026-04-15T08:30:00Z'),
+      createdById: staff1.id
+    }
+  });
+  // Gói hiện tại (Active)
   const sub1 = await prisma.subscription.create({
     data: {
       memberId: members[0].id,
@@ -169,7 +198,7 @@ async function main() {
     }
   });
 
-  // Member 2 (Trần Thị Bình) - Gói 10 buổi lẻ (Active) - Đăng ký 2026-06-10
+  // Member 2 (Trần Thị Bình)
   const sub2 = await prisma.subscription.create({
     data: {
       memberId: members[1].id,
@@ -186,7 +215,22 @@ async function main() {
     }
   });
 
-  // Member 3 (Phạm Hồng Cường) - Gói 1 năm (Active) - Đăng ký từ 2026-04-15
+  // Member 3 (Phạm Hồng Cường)
+  // Gói quá khứ (Expired): 3 tháng từ 2026-01-01 đến 2026-04-01
+  await prisma.subscription.create({
+    data: {
+      memberId: members[2].id,
+      packageId: pkg3m.id,
+      startDate: '2026-01-01',
+      endDate: '2026-04-01',
+      status: 'expired',
+      paymentMethod: 'bank_transfer',
+      amountPaid: 1500000,
+      paidAt: new Date('2026-01-01T09:00:00Z'),
+      createdById: staff2.id
+    }
+  });
+  // Gói hiện tại (Active)
   const sub3 = await prisma.subscription.create({
     data: {
       memberId: members[2].id,
@@ -201,9 +245,9 @@ async function main() {
     }
   });
 
-  // Member 4 (Lê Hoàng Dung) - Gói 1 tháng (Đã hết hạn và gia hạn)
-  // Sub cũ (Đã hết hạn)
-  const sub4Old = await prisma.subscription.create({
+  // Member 4 (Lê Hoàng Dung)
+  // Gói cũ (Expired)
+  await prisma.subscription.create({
     data: {
       memberId: members[3].id,
       packageId: pkg1m.id,
@@ -216,7 +260,7 @@ async function main() {
       createdById: staff2.id
     }
   });
-  // Sub mới gia hạn từ 2026-06-01
+  // Gói gia hạn mới (Active)
   const sub4 = await prisma.subscription.create({
     data: {
       memberId: members[3].id,
@@ -230,7 +274,6 @@ async function main() {
       createdById: staff1.id
     }
   });
-  // Ghi nhận vào lịch sử gia hạn
   await prisma.subscriptionRenewal.create({
     data: {
       subscriptionId: sub4.id,
@@ -243,7 +286,7 @@ async function main() {
     }
   });
 
-  // Member 5 (Nguyễn Tiến Đạt) - Gói VIP kèm PT (HLV Phạm Văn Minh)
+  // Member 5 (Nguyễn Tiến Đạt)
   const sub5 = await prisma.subscription.create({
     data: {
       memberId: members[4].id,
@@ -261,7 +304,7 @@ async function main() {
     }
   });
 
-  // Member 6 (Vũ Thị Hương) - Gói PT riêng (20 buổi với HLV Hoàng Thu Trang)
+  // Member 6 (Vũ Thị Hương)
   const sub6 = await prisma.subscription.create({
     data: {
       memberId: members[5].id,
@@ -278,7 +321,7 @@ async function main() {
     }
   });
 
-  // Member 7 (Hoàng Văn Hải) - Gói 3 tháng (Mới đăng ký hôm nay)
+  // Member 7 (Hoàng Văn Hải)
   const sub7 = await prisma.subscription.create({
     data: {
       memberId: members[6].id,
@@ -293,52 +336,216 @@ async function main() {
     }
   });
 
+  // Member 8 (Đặng Trung Kiên)
+  // Gói cũ bị Hủy (Cancelled) do bận học tập quân sự
+  await prisma.subscription.create({
+    data: {
+      memberId: members[7].id,
+      packageId: pkg1m.id,
+      startDate: '2026-05-01',
+      endDate: '2026-05-31',
+      status: 'cancelled',
+      paymentMethod: 'cash',
+      amountPaid: 600000,
+      paidAt: new Date('2026-05-01T14:00:00Z'),
+      createdById: staff2.id
+    }
+  });
+
+  // Member 9 (Bùi Minh Tuấn)
+  // Gói cũ (Expired)
+  const sub9Old = await prisma.subscription.create({
+    data: {
+      memberId: members[8].id,
+      packageId: pkg10s.id,
+      startDate: '2026-02-01',
+      endDate: '2026-03-15',
+      sessionsTotal: 10,
+      sessionsUsed: 10,
+      status: 'expired',
+      paymentMethod: 'e_wallet',
+      amountPaid: 600000,
+      paidAt: new Date('2026-02-01T18:00:00Z'),
+      createdById: staff3.id
+    }
+  });
+  // Gói hiện tại (Active)
+  const sub9 = await prisma.subscription.create({
+    data: {
+      memberId: members[8].id,
+      packageId: pkg1m.id,
+      startDate: '2026-06-10',
+      endDate: '2026-07-10',
+      status: 'active',
+      paymentMethod: 'cash',
+      amountPaid: 600000,
+      paidAt: new Date('2026-06-10T18:15:00Z'),
+      createdById: staff2.id
+    }
+  });
+
+  // Member 10 (Trần Minh Khoa)
+  const sub10 = await prisma.subscription.create({
+    data: {
+      memberId: members[9].id,
+      packageId: pkg3m.id,
+      startDate: '2026-05-20',
+      endDate: '2026-08-20',
+      status: 'active',
+      paymentMethod: 'bank_transfer',
+      amountPaid: 1500000,
+      paidAt: new Date('2026-05-20T10:00:00Z'),
+      createdById: staff3.id
+    }
+  });
+
+  // Member 11 (Phan Thúy Hạnh) - Tập cùng PT Quốc Anh
+  const sub11 = await prisma.subscription.create({
+    data: {
+      memberId: members[10].id,
+      packageId: pkgPtOnly.id,
+      startDate: '2026-06-01',
+      sessionsTotal: 20,
+      sessionsUsed: 12,
+      status: 'active',
+      paymentMethod: 'bank_transfer',
+      amountPaid: 6000000,
+      paidAt: new Date('2026-06-01T15:30:00Z'),
+      createdById: owner.id,
+      trainerId: pt3.id
+    }
+  });
+
+  // Member 12 (Lâm Chí Dũng)
+  const sub12 = await prisma.subscription.create({
+    data: {
+      memberId: members[11].id,
+      packageId: pkg12m.id,
+      startDate: '2026-02-10',
+      endDate: '2027-02-10',
+      status: 'active',
+      paymentMethod: 'bank_transfer',
+      amountPaid: 5000000,
+      paidAt: new Date('2026-02-10T09:40:00Z'),
+      createdById: staff1.id
+    }
+  });
+
+  // Member 13 (Vũ Thành Long)
+  // Gói cũ (Expired)
+  await prisma.subscription.create({
+    data: {
+      memberId: members[12].id,
+      packageId: pkg3m.id,
+      startDate: '2025-10-10',
+      endDate: '2026-01-10',
+      status: 'expired',
+      paymentMethod: 'cash',
+      amountPaid: 1500000,
+      paidAt: new Date('2025-10-10T08:00:00Z'),
+      createdById: staff2.id
+    }
+  });
+  // Gói hiện tại (Active)
+  const sub13 = await prisma.subscription.create({
+    data: {
+      memberId: members[12].id,
+      packageId: pkg12m.id,
+      startDate: '2026-01-15',
+      endDate: '2027-01-15',
+      status: 'active',
+      paymentMethod: 'bank_transfer',
+      amountPaid: 5000000,
+      paidAt: new Date('2026-01-15T11:00:00Z'),
+      createdById: owner.id
+    }
+  });
+
+  // Member 14 (Ngô Gia Bảo)
+  const sub14 = await prisma.subscription.create({
+    data: {
+      memberId: members[13].id,
+      packageId: pkg1m.id,
+      startDate: '2026-06-18',
+      endDate: '2026-07-18',
+      status: 'active',
+      paymentMethod: 'e_wallet',
+      amountPaid: 600000,
+      paidAt: new Date('2026-06-18T16:20:00Z'),
+      createdById: staff3.id
+    }
+  });
+
   // 8. CREATE TRAINING LOGS (CHECK-INS)
   console.log('🚶 Creating check-in history (Training Logs)...');
-  // Checkins for Nguyễn Văn A (sub1)
-  const checkins = [
-    { sub: sub1, member: members[0], date: '2026-06-02', in: '08:15:00', out: '09:45:00', note: 'Chạy bộ và đẩy ngực nhẹ' },
-    { sub: sub1, member: members[0], date: '2026-06-05', in: '08:00:00', out: '09:30:00', note: 'Tập chân đùi' },
-    { sub: sub1, member: members[0], date: '2026-06-08', in: '08:20:00', out: '10:00:00', note: 'Tập lưng xô' },
-    { sub: sub1, member: members[0], date: '2026-06-12', in: '08:10:00', out: '09:40:00', note: 'Tập vai tay sau' },
-    { sub: sub1, member: members[0], date: '2026-06-19', in: '08:05:00', out: '09:35:00', note: 'Tập bụng & Cardio nhẹ' },
-    
-    // Checkins for Trần Thị Bình (sub2) - trừ buổi tập (sessionsUsed: 4)
-    { sub: sub2, member: members[1], date: '2026-06-11', in: '18:00:00', out: '19:00:00', note: 'Chạy bộ nhẹ nhàng' },
-    { sub: sub2, member: members[1], date: '2026-06-13', in: '17:45:00', out: '19:15:00', note: 'Lớp Group Fitness' },
-    { sub: sub2, member: members[1], date: '2026-06-16', in: '18:10:00', out: '19:10:00', note: 'Đạp xe' },
-    { sub: sub2, member: members[1], date: '2026-06-20', in: '18:00:00', out: '19:15:00', note: 'Tập cơ bụng' },
 
-    // Checkins for Nguyễn Tiến Đạt cùng PT Minh (sub5)
-    { sub: sub5, member: members[4], date: '2026-05-12', in: '14:00:00', out: '15:30:00', note: 'PT hướng dẫn căn bản và đo chỉ số Inbody' },
-    { sub: sub5, member: members[4], date: '2026-05-15', in: '14:00:00', out: '15:15:00', note: 'Tập bài Squat và đùi trước' },
-    { sub: sub5, member: members[4], date: '2026-05-19', in: '14:10:00', out: '15:40:00', note: 'Tập lưng xô, kéo cáp' },
-    { sub: sub5, member: members[4], date: '2026-05-26', in: '14:00:00', out: '15:20:00', note: 'Đẩy ngực ngang' },
-    { sub: sub5, member: members[4], date: '2026-06-02', in: '14:00:00', out: '15:30:00', note: 'Tập Cardio cường độ cao HIIT' },
-    { sub: sub5, member: members[4], date: '2026-06-16', in: '14:05:00', out: '15:30:00', note: 'Tập vai tay sau gánh tạ' },
-
-    // Checkins hôm nay (2026-06-21) - Chưa check-out (đang tập)
-    { sub: sub3, member: members[2], date: '2026-06-21', in: '13:00:00', out: null, note: 'Tập lưng bụng tự do' },
-    { sub: sub6, member: members[5], date: '2026-06-21', in: '13:30:00', out: null, note: 'Tập Pilates máy cùng HLV Trang' }
-  ];
-
-  for (const c of checkins) {
+  // Historical logs for Member 9's old expired subscription (10 sessions)
+  for (let d = 1; d <= 10; d++) {
+    const dayStr = String(d + 5).padStart(2, '0');
     await prisma.trainingLog.create({
       data: {
-        memberId: c.member.id,
-        subscriptionId: c.sub.id,
+        memberId: members[8].id,
+        subscriptionId: sub9Old.id,
+        checkedInAt: new Date(`2026-02-${dayStr}T18:00:00Z`),
+        checkedOutAt: new Date(`2026-02-${dayStr}T19:30:00Z`),
+        recordedById: staff3.id,
+        notes: `Tập luyện buổi thứ ${d}: Hướng dẫn máy gym & thể lực`
+      }
+    });
+  }
+
+  // Logs for Member 11 (Phan Thúy Hạnh) with PT3 - 12 sessions used
+  const hanhCheckins = [
+    { date: '2026-06-02', in: '16:00:00', out: '17:15:00', note: 'Khởi động nhẹ, kiểm tra thể lực với HLV Quốc Anh.' },
+    { date: '2026-06-03', in: '16:00:00', out: '17:30:00', note: 'Hướng dẫn chuẩn form Squat và Lunge chống đau gối.' },
+    { date: '2026-06-05', in: '16:15:00', out: '17:15:00', note: 'Tập cơ xô với xà đơn trợ lực.' },
+    { date: '2026-06-08', in: '16:00:00', out: '17:20:00', note: 'Tập cơ vai và tay sau với tạ đơn.' },
+    { date: '2026-06-10', in: '15:50:00', out: '17:00:00', note: 'Tập đẩy ngực tạ đòn Bench Press.' },
+    { date: '2026-06-12', in: '16:00:00', out: '17:15:00', note: 'Tập Leg Press tăng tiến mức tạ nhẹ.' },
+    { date: '2026-06-13', in: '10:00:00', out: '11:15:00', note: 'Cardio HIIT đốt mỡ 30 phút.' },
+    { date: '2026-06-15', in: '16:00:00', out: '17:30:00', note: 'Tập Hip Thrust mông đùi.' },
+    { date: '2026-06-16', in: '16:00:00', out: '17:20:00', note: 'Tập Romanian Deadlift với tạ đòn.' },
+    { date: '2026-06-18', in: '16:05:00', out: '17:15:00', note: 'Tập vai trước và vai sau máy cáp.' },
+    { date: '2026-06-19', in: '16:00:00', out: '17:30:00', note: 'Tập cơ core gập bụng nâng chân.' },
+    { date: '2026-06-20', in: '09:30:00', out: '10:45:00', note: 'Tập phục hồi cơ giãn cơ nhẹ nhàng.' }
+  ];
+  for (const c of hanhCheckins) {
+    await prisma.trainingLog.create({
+      data: {
+        memberId: members[10].id,
+        subscriptionId: sub11.id,
         checkedInAt: new Date(`${c.date}T${c.in}Z`),
-        checkedOutAt: c.out ? new Date(`${c.date}T${c.out}Z`) : null,
+        checkedOutAt: new Date(`${c.date}T${c.out}Z`),
         recordedById: staff1.id,
         notes: c.note
       }
     });
   }
 
+  // Active checkins today (2026-06-21) - Not checked out yet (in progress)
+  await prisma.trainingLog.create({
+    data: {
+      memberId: members[2].id,
+      subscriptionId: sub3.id,
+      checkedInAt: new Date('2026-06-21T13:00:00Z'),
+      recordedById: staff1.id,
+      notes: 'Tập ngực tự do với tạ tay'
+    }
+  });
+  await prisma.trainingLog.create({
+    data: {
+      memberId: members[5].id,
+      subscriptionId: sub6.id,
+      checkedInAt: new Date('2026-06-21T13:30:00Z'),
+      recordedById: staff2.id,
+      notes: 'Tập Pilates máy cùng HLV Trang'
+    }
+  });
+
   // 9. CREATE MAINTENANCE REQUESTS
   console.log('🔧 Creating maintenance requests...');
   // Request 1: Máy chạy bộ báo lỗi nút bấm - Đã xử lý xong
-  const m1 = await prisma.maintenanceRequest.create({
+  await prisma.maintenanceRequest.create({
     data: {
       equipmentId: eqRunning.id,
       reportedById: staff1.id,
@@ -372,9 +579,33 @@ async function main() {
     }
   });
 
+  // Request 4: Xe đạp tập xích lọc cọc - Đã xử lý (Resolved)
+  await prisma.maintenanceRequest.create({
+    data: {
+      equipmentId: eqBicycle.id,
+      reportedById: staff2.id,
+      description: 'Xe đạp số 2 kêu lọc cọc lớn ở hộp sên khi đạp nhanh, cần bôi trơn xích và căng dây.',
+      status: 'resolved',
+      reportedAt: new Date('2026-06-14T03:00:00Z'),
+      resolvedAt: new Date('2026-06-16T15:00:00Z'),
+      resolvedById: owner.id
+    }
+  });
+
+  // Request 5: Thảm yoga bị rách - Chưa xử lý (Pending)
+  await prisma.maintenanceRequest.create({
+    data: {
+      equipmentId: eqMats.id,
+      reportedById: staff3.id,
+      description: 'Có 3 thảm yoga Adidas bị rách mép cao su, dễ gây trượt ngã khi tập. Đề xuất mua bổ sung thảm mới.',
+      status: 'pending',
+      reportedAt: new Date('2026-06-19T08:30:00Z')
+    }
+  });
+
   // 10. CREATE FEEDBACKS
   console.log('💬 Creating feedback and evaluations...');
-  
+
   // Feedback 1: Đánh giá cơ sở vật chất (Máy chạy bộ) - Đã giải quyết
   await prisma.feedback.create({
     data: {
@@ -444,6 +675,46 @@ async function main() {
     }
   });
 
+  // Feedback 6: Góp ý tạ đệm giảm chấn (Bùi Minh Tuấn) - Đã giải quyết
+  await prisma.feedback.create({
+    data: {
+      memberId: members[8].id,
+      targetType: 'facility',
+      rating: 4,
+      comment: 'Dàn tạ tay và đòn tập rất ổn nhưng mong phòng bổ sung thảm cao su dày hơn ở khu deadlift tránh ồn sàn.',
+      status: 'resolved',
+      response: 'Chào bạn Tuấn, phòng tập đã trang bị thêm thảm giảm lực và giảm tiếng ồn chuyên dụng tại khu tập Deadlift tự do. Chúc bạn tập luyện thoải mái!',
+      resolvedAt: new Date('2026-06-18T14:30:00Z'),
+      resolvedById: owner.id,
+      createdAt: new Date('2026-06-17T09:00:00Z')
+    }
+  });
+
+  // Feedback 7: Đánh giá HLV Quốc Anh (Phan Thúy Hạnh) - Chưa trả lời
+  await prisma.feedback.create({
+    data: {
+      memberId: members[10].id,
+      targetType: 'pt',
+      targetId: pt3User.id,
+      rating: 5,
+      comment: 'HLV Quốc Anh có chuyên môn Powerlifting cực đỉnh, hướng dẫn set up tư thế nâng rất an toàn và chuyên nghiệp.',
+      status: 'pending',
+      createdAt: new Date('2026-06-21T10:00:00Z')
+    }
+  });
+
+  // Feedback 8: Góp ý bãi giữ xe giờ cao điểm (Vũ Thành Long) - Chưa trả lời
+  await prisma.feedback.create({
+    data: {
+      memberId: members[12].id,
+      targetType: 'facility',
+      rating: 3,
+      comment: 'Phòng tập rất tốt, sạch sẽ và rộng rãi. Tuy nhiên tầm 18h bãi giữ xe máy hơi chật và dắt xe ra mất thời gian.',
+      status: 'pending',
+      createdAt: new Date('2026-06-20T19:00:00Z')
+    }
+  });
+
   // 11. STAFF & TRAINER WEEKLY SCHEDULES
   console.log('📅 Setting up schedules...');
   // Staff 1 schedules
@@ -466,6 +737,16 @@ async function main() {
     }))
   });
 
+  // Staff 3 schedules
+  await prisma.staffSchedule.createMany({
+    data: [2, 3, 4, 5, 7].map((day) => ({
+      userId: staff3.id,
+      dayOfWeek: day,
+      startTime: '08:00',
+      endTime: '17:00',
+    }))
+  });
+
   // PT 1 schedules
   await prisma.trainerSchedule.createMany({
     data: [1, 3, 5].map((day) => ({
@@ -483,6 +764,16 @@ async function main() {
       dayOfWeek: day,
       startTime: '14:00',
       endTime: '18:00'
+    }))
+  });
+
+  // PT 3 schedules
+  await prisma.trainerSchedule.createMany({
+    data: [1, 3, 4, 6].map((day) => ({
+      trainerId: pt3.id,
+      dayOfWeek: day,
+      startTime: '08:00',
+      endTime: '16:00'
     }))
   });
 
