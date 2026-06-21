@@ -184,20 +184,6 @@ export default function Dashboard() {
                 <QuickAction icon={BarChart2} label="Xem báo cáo doanh thu" to="/reports" color="var(--warning)" />
               )}
             </div>
-
-            {/* System status */}
-            <div style={{ marginTop: 20, padding: '12px', background: 'var(--bg-surface)', borderRadius: 8 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: '0.6px', textTransform: 'uppercase' }}>
-                Trạng thái hệ thống
-              </div>
-              {['API Backend', 'Database Neon', 'Authentication'].map(s => (
-                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '3px 0' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
-                  <span style={{ color: 'var(--text-secondary)' }}>{s}</span>
-                  <span style={{ marginLeft: 'auto', color: 'var(--success)', fontSize: 11 }}>Online</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
