@@ -55,6 +55,26 @@ const ROLE_LABELS = {
   member: 'Hội viên',
 };
 
+const SHORT_LABELS = {
+  'Dashboard': 'Dashboard',
+  'Hội viên': 'Hội viên',
+  'Gói tập': 'Gói tập',
+  'Đăng ký / Gia hạn': 'Đăng ký',
+  'Phòng tập': 'Phòng tập',
+  'Thiết bị': 'Thiết bị',
+  'Nhân sự': 'Nhân sự',
+  'Lịch nhân viên': 'Lịch làm',
+  'Khuyến mãi': 'Khuyến mãi',
+  'Báo cáo': 'Báo cáo',
+  'Phản hồi': 'Phản hồi',
+  'Bảo trì': 'Bảo trì',
+  'Lịch làm việc': 'Lịch làm',
+  'Check-in': 'Check-in',
+  'Học viên': 'Học viên',
+  'Hồ sơ': 'Hồ sơ',
+  'Lịch sử tập': 'Lịch sử',
+};
+
 // Bottom nav shows only the most important items (max 5)
 const BOTTOM_NAV = {
   owner:  ['dashboard', 'members', 'checkin', 'reports'],
@@ -78,12 +98,19 @@ export default function Layout({ children }) {
   const initials = user?.name?.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase() || '?';
   const handleLogout = () => { logout(); navigate('/login'); };
   const closeSidebar = () => setSidebarOpen(false);
+  const handleLogoClick = () => {
+    if (user?.role === 'member') {
+      navigate('/profile');
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <div className="app-shell">
       {/* Sidebar */}
       <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <div className="sidebar-logo-icon">
             <Dumbbell size={18} color="white" />
           </div>
@@ -142,7 +169,7 @@ export default function Layout({ children }) {
       <main className="main-content">
         {/* Mobile top header */}
         <header className="mobile-header">
-          <div className="mobile-header-logo">
+          <div className="mobile-header-logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
             <div className="mobile-header-logo-icon">
               <Dumbbell size={16} color="white" />
             </div>
@@ -172,7 +199,7 @@ export default function Layout({ children }) {
                 className={`bottom-nav-item${isActive ? ' active' : ''}`}
               >
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                <span>{item.label.split(' ')[0]}</span>
+                <span>{SHORT_LABELS[item.label] || item.label}</span>
               </NavLink>
             );
           })}
