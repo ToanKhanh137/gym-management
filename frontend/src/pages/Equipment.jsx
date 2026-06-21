@@ -80,7 +80,7 @@ export default function Equipment() {
                 <option value="">Tất cả</option>
                 <option value="good">Tốt</option>
                 <option value="maintenance">Bảo trì</option>
-                <option value="broken">Hỏng</option>
+                <option value="damaged">Hỏng</option>
               </select>
               <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Thêm thiết bị</button>
             </div>

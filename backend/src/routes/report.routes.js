@@ -15,14 +15,20 @@ router.get('/revenue', authenticate, authorize('owner'), async (req, res) => {
     const [subscriptions, renewals] = await Promise.all([
       prisma.subscription.findMany({
         where: { paidAt: dateFilter },
-        include: { package: { select: { name: true, type: true } } },
+        include: {
+          package: { select: { name: true, type: true } },
+          member: { include: { user: { select: { name: true } } } },
+        },
         orderBy: { paidAt: 'asc' },
       }),
       prisma.subscriptionRenewal.findMany({
         where: { renewedAt: dateFilter },
         include: {
           subscription: {
-            include: { package: { select: { name: true, type: true } } },
+            include: {
+              package: { select: { name: true, type: true } },
+              member: { include: { user: { select: { name: true } } } },
+            },
           },
         },
         orderBy: { renewedAt: 'asc' },
@@ -39,14 +45,39 @@ router.get('/revenue', authenticate, authorize('owner'), async (req, res) => {
       const key = renewal.subscription.package.name;
       byPackage[key] = (byPackage[key] || 0) + renewal.amountPaid;
     });
+
+    // Form transactions details for Excel export
+    const transactions = [
+      ...subscriptions.map(s => ({
+        id: `REG-${s.id.toString().padStart(5, '0')}`,
+        type: 'Đăng ký mới',
+        memberName: s.member?.user?.name || 'Ẩn danh',
+        packageName: s.package?.name || '—',
+        amountPaid: s.amountPaid,
+        paymentMethod: s.paymentMethod,
+        date: s.paidAt ? new Date(s.paidAt).toLocaleDateString('vi-VN') : '—',
+      })),
+      ...renewals.map(r => ({
+        id: `REN-${r.id.toString().padStart(5, '0')}`,
+        type: 'Gia hạn',
+        memberName: r.subscription?.member?.user?.name || 'Ẩn danh',
+        packageName: r.subscription?.package?.name || '—',
+        amountPaid: r.amountPaid,
+        paymentMethod: r.paymentMethod,
+        date: r.renewedAt ? new Date(r.renewedAt).toLocaleDateString('vi-VN') : '—',
+      })),
+    ];
+
     res.json({
       total,
       count: subscriptions.length + renewals.length,
       registrationsCount: subscriptions.length,
       renewalsCount: renewals.length,
       byPackage,
+      transactions,
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });

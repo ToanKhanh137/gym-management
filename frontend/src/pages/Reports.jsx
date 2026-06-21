@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Users, CheckCircle2, DollarSign, Activity, Star, TrendingUp } from 'lucide-react';
+import { Users, CheckCircle2, DollarSign, Activity, Star, TrendingUp, Download } from 'lucide-react';
 import api from '../api/client';
 
 const fmtCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
@@ -36,6 +36,68 @@ export default function Reports() {
     queryKey: ['performance'],
     queryFn: () => api.get('/reports/performance').then(r => r.data),
   });
+
+  const handleExportCSV = () => {
+    if (!revenue || !revenue.transactions || revenue.transactions.length === 0) {
+      alert('Không có dữ liệu giao dịch để xuất báo cáo!');
+      return;
+    }
+
+    const payLabels = { cash: 'Tiền mặt', bank_transfer: 'Chuyển khoản', e_wallet: 'Ví điện tử' };
+
+    // CSV headers
+    const headers = ['Mã giao dịch', 'Loại giao dịch', 'Ngày thanh toán', 'Hội viên', 'Gói tập', 'Số tiền (VNĐ)', 'Phương thức thanh toán'];
+    
+    // Convert transaction rows
+    const rows = revenue.transactions.map(t => [
+      t.id,
+      t.type,
+      t.date,
+      t.memberName,
+      t.packageName,
+      t.amountPaid,
+      payLabels[t.paymentMethod] || t.paymentMethod
+    ]);
+
+    // Summary section
+    const summaryRows = [
+      [],
+      ['TỔNG HỢP BÁO CÁO DOANH THU'],
+      ['Khoảng thời gian', `${from} đến ${to}`],
+      ['Tổng doanh thu', `${revenue.total} VNĐ`],
+      ['Tổng số lượng giao dịch', revenue.count],
+      [],
+      ['Doanh thu chi tiết theo gói tập:'],
+    ];
+
+    Object.entries(revenue.byPackage || {}).forEach(([pkgName, pkgValue]) => {
+      summaryRows.push([pkgName, `${pkgValue} VNĐ`]);
+    });
+
+    // Combine headers, rows and summary
+    const allRows = [headers, ...rows, ...summaryRows];
+
+    // Build CSV string with BOM
+    const csvContent = '\uFEFF' + allRows.map(e => e.map(val => {
+      // Escape double quotes and wrap in quotes if value contains commas or quotes
+      let cleanVal = String(val).replace(/"/g, '""');
+      if (cleanVal.includes(',') || cleanVal.includes('\n') || cleanVal.includes('"')) {
+        cleanVal = `"${cleanVal}"`;
+      }
+      return cleanVal;
+    }).join(',')).join('\n');
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bao_cao_doanh_thu_${from}_den_${to}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <>
@@ -83,6 +145,11 @@ export default function Reports() {
               <input className="form-input" type="date" value={to} onChange={e => setTo(e.target.value)} />
             </div>
             <button className="btn btn-primary" onClick={() => { refetch(); refetchRegistrations(); }}>Xem báo cáo</button>
+            {revenue && revenue.transactions && revenue.transactions.length > 0 && (
+              <button className="btn btn-ghost" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--border)' }}>
+                <Download size={14} /> Xuất Excel
+              </button>
+            )}
           </div>
 
           <div className="stats-grid" style={{ marginBottom: 22 }}>
