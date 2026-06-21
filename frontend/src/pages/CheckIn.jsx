@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { UserCheck, LogOut, Users, X, QrCode } from 'lucide-react';
+import { Html5Qrcode } from 'html5-qrcode';
 import api from '../api/client';
 
 export default function CheckIn() {
@@ -14,6 +15,7 @@ export default function CheckIn() {
   const [checkoutNotes, setCheckoutNotes] = useState('');
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [scannedCodeInput, setScannedCodeInput] = useState('');
+  const [cameraError, setCameraError] = useState('');
 
   const { data: members = [] } = useQuery({
     queryKey: ['members', memberSearch],
@@ -64,6 +66,43 @@ export default function CheckIn() {
       setError('Lỗi khi quét mã QR');
     });
   };
+
+  useEffect(() => {
+    if (!showQRScanner) {
+      setCameraError('');
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const html5QrCode = new Html5Qrcode("qr-reader-element");
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 200 },
+        (decodedText) => {
+          handleSimulateScan(decodedText);
+        },
+        (error) => {
+          // silent error
+        }
+      ).catch(err => {
+        console.error("Camera start error: ", err);
+        setCameraError("Không thể truy cập camera. Vui lòng kiểm tra quyền thiết bị.");
+      });
+
+      return () => {
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+          }).catch(err => {
+            console.error("Camera stop error: ", err);
+          });
+        }
+      };
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [showQRScanner]);
 
   const checkout = useMutation({
     mutationFn: ({ id, notes }) => api.patch(`/training-logs/${id}/checkout`, { notes }),
@@ -338,7 +377,7 @@ export default function CheckIn() {
         </div>
       )}
 
-      {/* QR Scanner Simulator Modal */}
+      {/* QR Scanner Modal */}
       {showQRScanner && (
         <div className="modal-overlay" onClick={() => { setShowQRScanner(false); setScannedCodeInput(''); }}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 450 }}>
@@ -363,50 +402,46 @@ export default function CheckIn() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexDirection: 'column',
-                gap: 12
+                flexDirection: 'column'
               }}>
-                {/* Simulated scan line */}
-                <div style={{
-                  position: 'absolute',
-                  left: 0,
-                  width: '100%',
-                  height: '2px',
-                  background: 'var(--primary)',
-                  boxShadow: '0 0 10px var(--primary)',
-                  animation: 'scan 2.5s infinite linear',
-                  top: 0
-                }} />
-                {/* CSS animation definition directly */}
-                <style dangerouslySetInnerHTML={{__html: `
-                  @keyframes scan {
-                    0% { top: 0%; }
-                    50% { top: 100%; }
-                    100% { top: 0%; }
-                  }
-                `}} />
+                {cameraError ? (
+                  <div style={{ padding: 20, textAlign: 'center', color: 'var(--accent-red)', fontSize: 13 }}>
+                    {cameraError}
+                  </div>
+                ) : (
+                  <>
+                    {/* Element where HTML5 QR Code will inject the video stream */}
+                    <div id="qr-reader-element" style={{ width: '100%', height: '100%' }}></div>
 
-                {/* Corner brackets */}
-                <div style={{ position: 'absolute', top: 16, left: 16, width: 20, height: 20, borderTop: '3px solid var(--primary)', borderLeft: '3px solid var(--primary)' }} />
-                <div style={{ position: 'absolute', top: 16, right: 16, width: 20, height: 20, borderTop: '3px solid var(--primary)', borderRight: '3px solid var(--primary)' }} />
-                <div style={{ position: 'absolute', bottom: 16, left: 16, width: 20, height: 20, borderBottom: '3px solid var(--primary)', borderLeft: '3px solid var(--primary)' }} />
-                <div style={{ position: 'absolute', bottom: 16, right: 16, width: 20, height: 20, borderBottom: '3px solid var(--primary)', borderRight: '3px solid var(--primary)' }} />
+                    {/* Scan line overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      width: '100%',
+                      height: '2px',
+                      background: 'var(--primary)',
+                      boxShadow: '0 0 10px var(--primary)',
+                      animation: 'scan 2.5s infinite linear',
+                      top: 0,
+                      pointerEvents: 'none',
+                      zIndex: 10
+                    }} />
+                    {/* CSS animation definition */}
+                    <style dangerouslySetInnerHTML={{__html: `
+                      @keyframes scan {
+                        0% { top: 0%; }
+                        50% { top: 100%; }
+                        100% { top: 0%; }
+                      }
+                    `}} />
 
-                <QrCode size={48} style={{ opacity: 0.15 }} />
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', zIndex: 1 }}>Camera giả lập: Đang dò tìm mã QR...</span>
-              </div>
-
-              {/* Simulation picker */}
-              <div className="form-group">
-                <label className="form-label">Chọn hội viên giả lập quét QR</label>
-                <select className="form-select" onChange={e => handleSimulateScan(e.target.value)} defaultValue="">
-                  <option value="">-- Chọn hội viên để quét --</option>
-                  {allMembers.map(m => (
-                    <option key={m.id} value={m.memberCode}>
-                      {m.user?.name} ({m.memberCode})
-                    </option>
-                  ))}
-                </select>
+                    {/* Corner brackets */}
+                    <div style={{ position: 'absolute', top: 16, left: 16, width: 20, height: 20, borderTop: '3px solid var(--primary)', borderLeft: '3px solid var(--primary)', pointerEvents: 'none', zIndex: 10 }} />
+                    <div style={{ position: 'absolute', top: 16, right: 16, width: 20, height: 20, borderTop: '3px solid var(--primary)', borderRight: '3px solid var(--primary)', pointerEvents: 'none', zIndex: 10 }} />
+                    <div style={{ position: 'absolute', bottom: 16, left: 16, width: 20, height: 20, borderBottom: '3px solid var(--primary)', borderLeft: '3px solid var(--primary)', pointerEvents: 'none', zIndex: 10 }} />
+                    <div style={{ position: 'absolute', bottom: 16, right: 16, width: 20, height: 20, borderBottom: '3px solid var(--primary)', borderRight: '3px solid var(--primary)', pointerEvents: 'none', zIndex: 10 }} />
+                  </>
+                )}
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -431,7 +466,7 @@ export default function CheckIn() {
                     onClick={() => handleSimulateScan(scannedCodeInput.trim())}
                     disabled={!scannedCodeInput.trim()}
                   >
-                    Quét
+                    Xác nhận
                   </button>
                 </div>
               </div>
