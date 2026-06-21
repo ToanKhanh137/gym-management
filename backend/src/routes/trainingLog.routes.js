@@ -7,7 +7,7 @@ const router = express.Router();
 // POST /api/training-logs — check-in
 router.post('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, res) => {
   try {
-    const { memberId, subscriptionId } = req.body;
+    const { memberId, subscriptionId, notes } = req.body;
     if (!memberId || !subscriptionId) return res.status(400).json({ error: 'memberId and subscriptionId required' });
 
     const sub = await prisma.subscription.findUnique({ where: { id: parseInt(subscriptionId) } });
@@ -21,6 +21,14 @@ router.post('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, re
         data: { status: 'expired' },
       });
       return res.status(400).json({ error: 'Subscription expired' });
+    }
+
+    // ENFORCE: if role is PT, they can only check-in their own students
+    if (req.user.role === 'pt') {
+      const trainer = await prisma.trainer.findUnique({ where: { userId: req.user.id } });
+      if (!trainer || sub.trainerId !== trainer.id) {
+        return res.status(403).json({ error: 'Huấn luyện viên chỉ được phép thực hiện check-in cho học viên của mình' });
+      }
     }
 
     const openLog = await prisma.trainingLog.findFirst({
@@ -44,6 +52,7 @@ router.post('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, re
           memberId: parseInt(memberId),
           subscriptionId: parseInt(subscriptionId),
           recordedById: req.user.id,
+          notes: notes || null,
         },
       }),
       prisma.subscription.update({
@@ -65,6 +74,15 @@ router.patch('/:id/checkout', authenticate, authorize('owner', 'staff', 'pt'), a
     const existing = await prisma.trainingLog.findUnique({ where: { id: parseInt(req.params.id) } });
     if (!existing) return res.status(404).json({ error: 'Training log not found' });
     if (existing.checkedOutAt) return res.status(400).json({ error: 'Training log already checked out' });
+
+    // ENFORCE: if role is PT, they can only check-out their own students
+    if (req.user.role === 'pt') {
+      const trainer = await prisma.trainer.findUnique({ where: { userId: req.user.id } });
+      const sub = await prisma.subscription.findUnique({ where: { id: existing.subscriptionId } });
+      if (!trainer || !sub || sub.trainerId !== trainer.id) {
+        return res.status(403).json({ error: 'Huấn luyện viên chỉ được phép thực hiện check-out cho học viên của mình' });
+      }
+    }
 
     const log = await prisma.trainingLog.update({
       where: { id: parseInt(req.params.id) },
@@ -88,8 +106,22 @@ router.get('/', authenticate, async (req, res) => {
       memberId = member.id;
     }
 
+    // If pt role, only return logs of their own students
+    let ptFilter = {};
+    if (req.user.role === 'pt') {
+      const trainer = await prisma.trainer.findUnique({ where: { userId: req.user.id } });
+      if (trainer) {
+        ptFilter = { subscription: { trainerId: trainer.id } };
+      } else {
+        return res.json([]);
+      }
+    }
+
     const logs = await prisma.trainingLog.findMany({
-      where: memberId ? { memberId: parseInt(memberId) } : {},
+      where: {
+        ...(memberId && { memberId: parseInt(memberId) }),
+        ...ptFilter
+      },
       include: {
         member: { include: { user: { select: { name: true } } } },
         recordedBy: { select: { name: true } },

@@ -23,12 +23,32 @@ router.get('/my/profile', authenticate, authorize('member'), async (req, res) =>
   }
 });
 
-// GET /api/members — staff, owner
+// GET /api/members — staff, owner, pt
 router.get('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, res) => {
   try {
     const { search, status } = req.query;
+
+    // Filter members to only those assigned to this trainer if logged-in user is a PT
+    let ptFilter = {};
+    if (req.user.role === 'pt') {
+      const trainer = await prisma.trainer.findUnique({ where: { userId: req.user.id } });
+      if (trainer) {
+        ptFilter = {
+          subscriptions: {
+            some: {
+              trainerId: trainer.id,
+              status: 'active'
+            }
+          }
+        };
+      } else {
+        return res.json([]);
+      }
+    }
+
     const members = await prisma.member.findMany({
       where: {
+        ...ptFilter,
         user: {
           isActive: true,
           ...(search && {
@@ -43,7 +63,12 @@ router.get('/', authenticate, authorize('owner', 'staff', 'pt'), async (req, res
       include: {
         user: { select: { id: true, name: true, email: true, phone: true, dob: true } },
         subscriptions: {
-          where: { status: 'active' },
+          where: { 
+            status: 'active',
+            ...(req.user.role === 'pt' && {
+              trainer: { userId: req.user.id }
+            })
+          },
           include: { package: true },
           orderBy: { createdAt: 'desc' },
           take: 1,

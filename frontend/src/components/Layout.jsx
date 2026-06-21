@@ -169,12 +169,27 @@ export default function Layout({ children }) {
       <main className="main-content">
         {/* Mobile top header */}
         <header className="mobile-header">
-          <div className="mobile-header-logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+          <button 
+            className="mobile-header-logo" 
+            onClick={handleLogoClick} 
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: 'inherit', 
+              padding: 0, 
+              font: 'inherit', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              textAlign: 'left'
+            }}
+          >
             <div className="mobile-header-logo-icon">
               <Dumbbell size={16} color="white" />
             </div>
             GymPro
-          </div>
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{user?.name}</div>
             <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>

@@ -7,6 +7,7 @@ export default function CheckIn() {
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedSub, setSelectedSub] = useState('');
+  const [checkinNotes, setCheckinNotes] = useState('');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [checkoutTarget, setCheckoutTarget] = useState(null);
@@ -32,6 +33,7 @@ export default function CheckIn() {
       setSuccess(`Check-in thành công cho ${selectedMember?.user?.name}!`);
       setError('');
       setSelectedMember(null); setMemberSearch(''); setSelectedSub('');
+      setCheckinNotes('');
       refetchLogs();
       setTimeout(() => setSuccess(''), 3000);
     },
@@ -57,7 +59,11 @@ export default function CheckIn() {
     setError('');
     if (!selectedMember) { setError('Vui lòng chọn hội viên'); return; }
     if (!selectedSub) { setError('Vui lòng chọn gói tập'); return; }
-    checkin.mutate({ memberId: selectedMember.id, subscriptionId: parseInt(selectedSub) });
+    checkin.mutate({ 
+      memberId: selectedMember.id, 
+      subscriptionId: parseInt(selectedSub),
+      notes: checkinNotes 
+    });
   };
 
   const activeSubs = selectedMember?.subscriptions?.filter(s => s.status === 'active') || [];
@@ -132,6 +138,21 @@ export default function CheckIn() {
                   ))}
                 </select>
                 {activeSubs.length === 0 && <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 4 }}>Không có gói active</p>}
+              </div>
+            )}
+
+            {/* Check-in notes */}
+            {selectedMember && selectedSub && (
+              <div className="form-group">
+                <label className="form-label">Ghi chú check-in (Không bắt buộc)</label>
+                <textarea
+                  className="form-input"
+                  placeholder="Nhập ghi chú hoặc tình trạng sức khỏe hôm nay..."
+                  value={checkinNotes}
+                  onChange={e => setCheckinNotes(e.target.value)}
+                  rows={2}
+                  style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                />
               </div>
             )}
 

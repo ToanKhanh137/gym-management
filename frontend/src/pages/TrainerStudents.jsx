@@ -8,6 +8,14 @@ export default function TrainerStudents() {
     queryFn: () => api.get('/trainers/mine/students').then(r => r.data),
   });
 
+  const getProgressColor = (used, total) => {
+    if (!total) return 'var(--accent-blue)';
+    const pct = (used / total) * 100;
+    if (pct < 50) return 'var(--success)';       // Green for early phase (< 50%)
+    if (pct < 80) return 'var(--warning)';       // Orange/Yellow for mid phase (50% - 79%)
+    return 'var(--danger)';                      // Red for critical phase (>= 80%)
+  };
+
   return (
     <>
       <div className="page-header">
@@ -59,7 +67,11 @@ export default function TrainerStudents() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                               <span>{s.sessionsUsed} / {s.sessionsTotal} buổi</span>
                               <div style={{ width: 60, height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-                                <div style={{ width: `${(s.sessionsUsed/s.sessionsTotal)*100}%`, height: '100%', background: 'var(--accent-blue)' }} />
+                                <div style={{ 
+                                  width: `${(s.sessionsUsed/s.sessionsTotal)*100}%`, 
+                                  height: '100%', 
+                                  background: getProgressColor(s.sessionsUsed, s.sessionsTotal) 
+                                }} />
                               </div>
                             </div>
                           ) : 'Không giới hạn'}
@@ -91,7 +103,11 @@ export default function TrainerStudents() {
                       </div>
                       {s.sessionsTotal && (
                         <div style={{ width: '100%', height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ width: `${(s.sessionsUsed/s.sessionsTotal)*100}%`, height: '100%', background: 'var(--accent-blue)' }} />
+                          <div style={{ 
+                            width: `${(s.sessionsUsed/s.sessionsTotal)*100}%`, 
+                            height: '100%', 
+                            background: getProgressColor(s.sessionsUsed, s.sessionsTotal) 
+                          }} />
                         </div>
                       )}
                     </div>
