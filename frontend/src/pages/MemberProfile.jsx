@@ -119,7 +119,7 @@ export default function MemberProfile() {
                     {recentLogs.map(l => {
                       const cin = new Date(l.checkedInAt);
                       const cout = l.checkedOutAt ? new Date(l.checkedOutAt) : null;
-                      const mins = cout ? Math.round((cout - cin) / 60000) : null;
+                      const mins = cout ? Math.max(0, Math.round((cout - cin) / 60000)) : null;
                       return (
                         <tr key={l.id}>
                           <td style={{ fontSize: 13 }}>{cin.toLocaleDateString('vi-VN')}</td>

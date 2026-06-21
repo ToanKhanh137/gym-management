@@ -17,7 +17,8 @@ export default function MyTraining() {
 
   const totalMinutes = logs.reduce((sum, l) => {
     if (!l.checkedInAt || !l.checkedOutAt) return sum;
-    return sum + Math.round((new Date(l.checkedOutAt) - new Date(l.checkedInAt)) / 60000);
+    const diff = Math.round((new Date(l.checkedOutAt) - new Date(l.checkedInAt)) / 60000);
+    return sum + Math.max(0, diff);
   }, 0);
   const avgMinutes = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
 
@@ -25,7 +26,7 @@ export default function MyTraining() {
   const formatDate = (iso) => iso ? new Date(iso).toLocaleDateString('vi-VN', { weekday:'short', day:'2-digit', month:'2-digit' }) : '—';
   const duration = (inTime, outTime) => {
     if (!inTime || !outTime) return null;
-    const mins = Math.round((new Date(outTime) - new Date(inTime)) / 60000);
+    const mins = Math.max(0, Math.round((new Date(outTime) - new Date(inTime)) / 60000));
     return mins >= 60 ? `${Math.floor(mins/60)}h${mins%60 ? (mins%60)+'p' : ''}` : `${mins} phút`;
   };
 
