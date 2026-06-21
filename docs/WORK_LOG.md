@@ -249,6 +249,11 @@
 - `[16:33]` Toàn — Fix backend tìm kiếm hội viên: bổ sung OR tìm theo `memberCode` (bảng Member) cạnh name/email/phone (bảng User), giúp quét QR tự điền đúng hội viên.
 - `[16:45]` Toàn — Fix camera stream không tắt đúng cách: refactor dùng `useRef` lưu instance `Html5Qrcode`, đặt cleanup `stopCamera()` trong return của `useEffect` thay vì trong setTimeout.
 - `[16:53]` Toàn — Cập nhật `DOC_NOTES.md` và `WORK_LOG.md` theo các tính năng vừa bổ sung.
+- `[17:25]` Toàn — Cấu hình môi trường CORS động trên Backend để cho phép kết nối từ Vercel (`*.vercel.app`), cấu hình frontend trỏ endpoint qua biến môi trường `VITE_API_URL`.
+- `[17:28]` Toàn — Deploy Backend Express lên Railway (tích hợp Neon Database), giải quyết lỗi cấu hình PORT và Prisma postinstall generate.
+- `[17:44]` Toàn — Deploy Frontend lên Vercel, sửa lỗi 404 khi F5 trang trên Vercel bằng cách tạo tệp cấu hình `vercel.json` định hướng rewrite về `index.html`.
+- `[17:50]` Toàn — Tối ưu hóa UI QR Scanner (CheckIn.jsx): Căn giữa modal và tăng kích thước vùng quét camera lên 320px để cải thiện độ tiện dụng trên thiết bị di động.
+- `[18:00]` Toàn — Thêm tính năng **Đặt lại/Đổi mật khẩu**: Hỗ trợ đổi mật khẩu cho nhân sự (Staff/PT) trực tiếp trong modal edit của Owner (`Users.jsx`) và đổi mật khẩu hội viên trong trang chi tiết (`MemberDetail.jsx`).
 
 ---
 
@@ -257,7 +262,7 @@
 
 **Trạng thái hiện tại (cập nhật bởi nhóm):**
 - Đang làm: Chuẩn bị bảng UT và tài liệu chính thức.
-- Vừa xong: Migration Neon, 27/27 unit/API test và smoke test 4 role đều pass.
+- Vừa xong: Deploy thành công dự án lên Production (Vercel + Railway + Neon), 27/27 unit/API test pass, bổ sung tính năng đổi mật khẩu tài khoản và tối ưu UI QR.
 - Cần tiếp theo: Ghi từng test case vào bảng UT và bổ sung ảnh bằng chứng.
 - Tech stack đã chọn: React + Vite, Express, Prisma, Neon PostgreSQL, JWT.
 - Repo GitHub: `https://github.com/ToanKhanh137/gym-management.git`

@@ -395,4 +395,15 @@
 
 ---
 
+## 🚀 THÔNG TIN TRIỂN KHAI CLOUD (Production)
+- **Frontend Vercel:** `https://gym-management-three-xi.vercel.app`
+- **Backend Railway:** `https://gym-management-production-a9aa.up.railway.app`
+- **Database Neon:** Cloud PostgreSQL (Singapore Region)
+- **Cấu hình Client-Side Routing:** rewrite URL thông qua `vercel.json` để tránh lỗi 404 khi tải lại trang (F5).
+- **Tính năng Đổi mật khẩu tài khoản:**
+  - Owner có thể đổi/đặt lại mật khẩu cho tất cả nhân sự (Staff/PT) tại màn hình Quản lý nhân sự (`/users`).
+  - Owner/Staff có thể đặt lại mật khẩu cho Hội viên tại trang Chi tiết hội viên (`/members/:id`).
+
+---
+
 *File này cập nhật liên tục trong quá trình code. Format lại thành tài liệu chính thức sau.*
