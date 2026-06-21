@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import api from '../api/client';
 
 const fmtCurrency = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
@@ -14,6 +14,11 @@ export default function Reports() {
   const { data: revenue, isLoading: loadRev, refetch } = useQuery({
     queryKey: ['revenue', from, to],
     queryFn: () => api.get(`/reports/revenue?from=${from}&to=${to}`).then(r => r.data),
+  });
+
+  const { data: registrationReport, refetch: refetchRegistrations } = useQuery({
+    queryKey: ['registration-report', from, to],
+    queryFn: () => api.get(`/reports/registrations?from=${from}&to=${to}`).then(r => r.data),
   });
 
   const { data: summary } = useQuery({
@@ -76,7 +81,26 @@ export default function Reports() {
               <label className="form-label">Đến ngày</label>
               <input className="form-input" type="date" value={to} onChange={e => setTo(e.target.value)} />
             </div>
-            <button className="btn btn-primary" onClick={() => refetch()}>Xem báo cáo</button>
+            <button className="btn btn-primary" onClick={() => { refetch(); refetchRegistrations(); }}>Xem báo cáo</button>
+          </div>
+
+          <div className="stats-grid" style={{ marginBottom: 22 }}>
+            <div className="stat-card">
+              <div className="stat-card-label">Hội viên mới</div>
+              <div className="stat-card-value">{registrationReport?.newMembers ?? 0}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card-label">Đăng ký mới</div>
+              <div className="stat-card-value">{registrationReport?.registrations ?? 0}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card-label">Lượt gia hạn</div>
+              <div className="stat-card-value">{registrationReport?.renewals ?? 0}</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card-label">Buổi đã sử dụng</div>
+              <div className="stat-card-value">{registrationReport?.sessionsUsed ?? 0}</div>
+            </div>
           </div>
 
           {loadRev ? (

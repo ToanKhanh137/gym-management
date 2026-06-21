@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Users, Ticket, ClipboardList, Home,
   Dumbbell, UserCog, BarChart2, MessageSquare, CheckSquare,
-  Calendar, User, LogOut, Wrench, Star, Menu, X
+  Calendar, User, LogOut, Wrench, Star, Menu, X, Gift
 } from 'lucide-react';
 
 const NAV = {
@@ -16,6 +16,8 @@ const NAV = {
     { label: 'Phòng tập',         icon: Home,            to: '/rooms' },
     { label: 'Thiết bị',          icon: Dumbbell,        to: '/equipment' },
     { label: 'Nhân sự',           icon: UserCog,         to: '/users' },
+    { label: 'Lịch nhân viên',    icon: Calendar,        to: '/staff-schedule' },
+    { label: 'Khuyến mãi',        icon: Gift,            to: '/promotions' },
     { label: 'Báo cáo',           icon: BarChart2,       to: '/reports' },
     { label: 'Phản hồi',          icon: MessageSquare,   to: '/feedbacks' },
   ],
@@ -28,6 +30,8 @@ const NAV = {
     { label: 'Thiết bị',          icon: Dumbbell,        to: '/equipment' },
     { label: 'Bảo trì',           icon: Wrench,          to: '/maintenance' },
     { label: 'Phản hồi',          icon: MessageSquare,   to: '/feedbacks' },
+    { label: 'Lịch làm việc',     icon: Calendar,        to: '/staff-schedule' },
+    { label: 'Khuyến mãi',        icon: Gift,            to: '/promotions' },
   ],
   pt: [
     { label: 'Dashboard',         icon: LayoutDashboard, to: '/dashboard' },
@@ -40,6 +44,7 @@ const NAV = {
     { label: 'Gói tập',           icon: Ticket,          to: '/my-subscription' },
     { label: 'Lịch sử tập',       icon: Calendar,        to: '/my-training' },
     { label: 'Phản hồi',          icon: Star,            to: '/feedback' },
+    { label: 'Khuyến mãi',        icon: Gift,            to: '/promotions' },
   ],
 };
 

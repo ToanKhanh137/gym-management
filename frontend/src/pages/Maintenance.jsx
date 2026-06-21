@@ -28,7 +28,7 @@ export default function Maintenance() {
 
       <div className="page-body">
         <div style={{ display:'flex', gap:12, marginBottom:20 }}>
-          {[['pending','Đang chờ xử lý','badge-yellow'],['resolved','Đã hoàn thành','badge-green']].map(([s,l,c]) => (
+          {[['pending','Đang chờ xử lý'],['resolved','Đã hoàn thành']].map(([s,l]) => (
             <div key={s} className="stat-card" style={{ flex:'1 1 200px', padding:'12px 16px' }}>
               <div style={{ fontSize:22, fontWeight:700 }}>{maintenance.filter(x=>x.status===s).length}</div>
               <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:2 }}>{l}</div>

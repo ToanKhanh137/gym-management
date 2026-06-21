@@ -8,7 +8,10 @@ const router = express.Router();
 router.get('/', authenticate, authorize('owner', 'staff'), async (req, res) => {
   try {
     const feedbacks = await prisma.feedback.findMany({
-      include: { member: { include: { user: { select: { name: true } } } } },
+      include: {
+        member: { include: { user: { select: { name: true } } } },
+        resolvedBy: { select: { name: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
     res.json(feedbacks);
@@ -67,6 +70,38 @@ router.post('/', authenticate, authorize('member'), async (req, res) => {
       },
     });
     res.status(201).json(feedback);
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH /api/feedbacks/:id/resolve
+router.patch('/:id/resolve', authenticate, authorize('owner', 'staff'), async (req, res) => {
+  try {
+    const { response } = req.body;
+    if (!response?.trim()) {
+      return res.status(400).json({ error: 'Response is required' });
+    }
+
+    const feedback = await prisma.feedback.findUnique({
+      where: { id: parseInt(req.params.id) },
+    });
+    if (!feedback) return res.status(404).json({ error: 'Feedback not found' });
+
+    const updated = await prisma.feedback.update({
+      where: { id: feedback.id },
+      data: {
+        status: 'resolved',
+        response: response.trim(),
+        resolvedAt: new Date(),
+        resolvedById: req.user.id,
+      },
+      include: {
+        member: { include: { user: { select: { name: true } } } },
+        resolvedBy: { select: { name: true } },
+      },
+    });
+    res.json(updated);
   } catch {
     res.status(500).json({ error: 'Server error' });
   }

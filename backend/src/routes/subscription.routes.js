@@ -62,7 +62,8 @@ router.get('/', authenticate, async (req, res) => {
       include: {
         member: { include: { user: { select: { name: true, email: true } } } },
         package: true,
-        trainer: { include: { user: { select: { name: true } } } }
+        trainer: { include: { user: { select: { name: true } } } },
+        renewals: { orderBy: { renewedAt: 'desc' } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -180,6 +181,78 @@ router.post('/mine', authenticate, authorize('member'), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Server error' });
+  }
+});
+
+// POST /api/subscriptions/:id/renew
+router.post('/:id/renew', authenticate, authorize('owner', 'staff'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { paymentMethod } = req.body;
+    if (!['cash', 'bank_transfer', 'e_wallet'].includes(paymentMethod)) {
+      return res.status(400).json({ error: 'Invalid payment method' });
+    }
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { id },
+      include: { package: true },
+    });
+    if (!subscription) return res.status(404).json({ error: 'Subscription not found' });
+    if (subscription.status === 'cancelled') {
+      return res.status(400).json({ error: 'Cancelled subscription cannot be renewed' });
+    }
+    if (!subscription.package.isActive) {
+      return res.status(400).json({ error: 'Package is inactive' });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    let newEndDate = subscription.endDate;
+    let addedSessions = null;
+    const updateData = {
+      status: 'active',
+    };
+
+    if (subscription.package.durationDays) {
+      const baseDate = subscription.endDate && subscription.endDate >= today
+        ? new Date(subscription.endDate)
+        : new Date(today);
+      baseDate.setDate(baseDate.getDate() + subscription.package.durationDays);
+      newEndDate = baseDate.toISOString().split('T')[0];
+      updateData.endDate = newEndDate;
+    } else if (subscription.package.totalSessions) {
+      addedSessions = subscription.package.totalSessions;
+      updateData.sessionsTotal = { increment: addedSessions };
+    } else {
+      return res.status(400).json({ error: 'Package has no renewable duration or sessions' });
+    }
+
+    const [updated, renewal] = await prisma.$transaction([
+      prisma.subscription.update({
+        where: { id },
+        data: updateData,
+        include: {
+          member: { include: { user: { select: { name: true, email: true } } } },
+          package: true,
+          trainer: { include: { user: { select: { name: true } } } },
+        },
+      }),
+      prisma.subscriptionRenewal.create({
+        data: {
+          subscriptionId: id,
+          previousEndDate: subscription.endDate,
+          newEndDate,
+          addedSessions,
+          paymentMethod,
+          amountPaid: subscription.package.price,
+          renewedById: req.user.id,
+        },
+      }),
+    ]);
+
+    res.json({ subscription: updated, renewal });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

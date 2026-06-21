@@ -29,6 +29,9 @@ model User {
   maintenanceResolved MaintenanceRequest[] @relation("Resolver")
   trainingLogsRecorded TrainingLog[]    @relation("RecordedBy")
   subscriptionsCreated Subscription[]  @relation("CreatedBy")
+  subscriptionRenewals SubscriptionRenewal[] @relation("RenewedBy")
+  feedbacksResolved    Feedback[]       @relation("FeedbackResolver")
+  staffSchedules       StaffSchedule[]
 
   @@map("users")
 }
@@ -110,8 +113,26 @@ model Subscription {
   createdBy   User              @relation("CreatedBy", fields: [createdById], references: [id])
   trainer     Trainer?          @relation(fields: [trainerId], references: [id])
   trainingLogs TrainingLog[]
+  renewals     SubscriptionRenewal[]
 
   @@map("subscriptions")
+}
+
+model SubscriptionRenewal {
+  id              Int      @id @default(autoincrement())
+  subscriptionId  Int      @map("subscription_id")
+  previousEndDate String?  @map("previous_end_date")
+  newEndDate      String?  @map("new_end_date")
+  addedSessions   Int?     @map("added_sessions")
+  paymentMethod   String   @map("payment_method")
+  amountPaid      Float    @map("amount_paid")
+  renewedById     Int      @map("renewed_by_id")
+  renewedAt       DateTime @default(now()) @map("renewed_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  renewedBy    User         @relation("RenewedBy", fields: [renewedById], references: [id])
+
+  @@map("subscription_renewals")
 }
 
 model Room {
@@ -185,11 +206,42 @@ model Feedback {
   targetType  String   @map("target_type") // "staff" | "facility" | "pt"
   targetId    Int?     @map("target_id")   // FK to users or rooms
   rating      Int      // 1–5
-  comment     String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  comment      String?
+  status       String    @default("pending")
+  response     String?
+  resolvedAt   DateTime? @map("resolved_at")
+  resolvedById Int?      @map("resolved_by_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   member Member @relation("FeedbackSender", fields: [memberId], references: [id])
-  givenBy User? @relation("FeedbackGiver", fields: [targetId], references: [id])
+  givenBy    User? @relation("FeedbackGiver", fields: [targetId], references: [id])
+  resolvedBy User? @relation("FeedbackResolver", fields: [resolvedById], references: [id])
 
   @@map("feedbacks")
+}
+
+model StaffSchedule {
+  id        Int    @id @default(autoincrement())
+  userId    Int    @map("user_id")
+  dayOfWeek Int    @map("day_of_week")
+  startTime String  @map("start_time")
+  endTime   String  @map("end_time")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, dayOfWeek])
+  @@map("staff_schedules")
+}
+
+model Promotion {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String?
+  discountPercent Int?     @map("discount_percent")
+  startDate       String   @map("start_date")
+  endDate         String   @map("end_date")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("promotions")
 }

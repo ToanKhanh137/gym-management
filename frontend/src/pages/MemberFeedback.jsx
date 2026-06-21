@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Star, Send } from 'lucide-react';
 import api from '../api/client';
-import { useAuth } from '../context/AuthContext';
 
 const TARGET_OPTIONS = [
   { value: 'staff',    label: 'Nhân viên quản lý' },
@@ -30,7 +29,6 @@ const LABEL = ['','Rất tệ','Tệ','Bình thường','Tốt','Xuất sắc'];
 
 export default function MemberFeedback() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   const [form, setForm] = useState({ targetType:'staff', targetId:'', rating:0, comment:'' });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -121,6 +119,16 @@ export default function MemberFeedback() {
                     {[1,2,3,4,5].map(i=><Star key={i} size={12} fill={i<=f.rating?'#f59e0b':'none'} stroke={i<=f.rating?'#f59e0b':'var(--text-muted)'}/>)}
                   </div>
                   {f.comment && <div style={{ fontSize:13, color:'var(--text-secondary)' }}>{f.comment}</div>}
+                  <div style={{ marginTop: 8 }}>
+                    <span className={`badge ${f.status === 'resolved' ? 'badge-green' : 'badge-yellow'}`}>
+                      {f.status === 'resolved' ? 'Đã được xử lý' : 'Đang chờ xử lý'}
+                    </span>
+                  </div>
+                  {f.response && (
+                    <div style={{ marginTop: 8, padding: '9px 10px', background: 'var(--bg-hover)', borderRadius: 6, fontSize: 12 }}>
+                      <strong>Phản hồi từ phòng gym:</strong> {f.response}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { UserCheck, LogOut, Users } from 'lucide-react';
 import api from '../api/client';
 
 export default function CheckIn() {
-  const qc = useQueryClient();
   const [memberSearch, setMemberSearch] = useState('');
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedSub, setSelectedSub] = useState('');

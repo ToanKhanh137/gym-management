@@ -16,7 +16,7 @@ async function main() {
 
   // Create Staff account
   const staffHash = await bcrypt.hash('staff123', 10);
-  await prisma.user.upsert({
+  const staff = await prisma.user.upsert({
     where: { email: 'staff@gym.com' },
     update: {},
     create: { name: 'Nhân viên A', email: 'staff@gym.com', passwordHash: staffHash, role: 'staff', phone: '0900000002' },
@@ -105,6 +105,37 @@ async function main() {
       createdById: owner.id,
     },
   });
+
+  await prisma.staffSchedule.deleteMany({ where: { userId: staff.id } });
+  await prisma.staffSchedule.createMany({
+    data: [1, 2, 3, 4, 5].map((dayOfWeek) => ({
+      userId: staff.id,
+      dayOfWeek,
+      startTime: '08:00',
+      endTime: '17:00',
+    })),
+  });
+
+  const promotionCount = await prisma.promotion.count();
+  if (promotionCount === 0) {
+    await prisma.promotion.createMany({
+      data: [
+        {
+          title: 'Ưu đãi mùa hè',
+          description: 'Giảm 15% cho hội viên đăng ký gói từ 3 tháng.',
+          discountPercent: 15,
+          startDate: '2026-06-01',
+          endDate: '2026-08-31',
+        },
+        {
+          title: 'Tặng buổi trải nghiệm PT',
+          description: 'Tặng 1 buổi PT cho hội viên đăng ký gói PT mới.',
+          startDate: '2026-06-01',
+          endDate: '2026-12-31',
+        },
+      ],
+    });
+  }
 
   console.log('✅ Seed complete!');
   console.log('📋 Test accounts:');

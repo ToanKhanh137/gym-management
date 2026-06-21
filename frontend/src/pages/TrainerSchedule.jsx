@@ -20,6 +20,7 @@ export default function TrainerSchedule() {
       data.forEach(s => {
         formatted[s.dayOfWeek] = { startTime: s.startTime, endTime: s.endTime, active: true };
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSchedule(formatted);
     }
   }, [data]);

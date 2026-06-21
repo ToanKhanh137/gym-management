@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ClipboardList, Plus, X, Search, Printer } from 'lucide-react';
+import { ClipboardList, Plus, X, Search, Printer, RefreshCw } from 'lucide-react';
 import api from '../api/client';
 
 const STATUS_BADGE = {
@@ -18,6 +18,9 @@ export default function Subscriptions() {
   const [formError, setFormError] = useState('');
   const [memberSearch, setMemberSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [renewTarget, setRenewTarget] = useState(null);
+  const [renewPaymentMethod, setRenewPaymentMethod] = useState('cash');
+  const [renewError, setRenewError] = useState('');
 
   const { data: subs = [], isLoading } = useQuery({
     queryKey: ['subscriptions'],
@@ -48,6 +51,16 @@ export default function Subscriptions() {
   const cancelSub = useMutation({
     mutationFn: (id) => api.patch(`/subscriptions/${id}/cancel`),
     onSuccess: () => qc.invalidateQueries(['subscriptions']),
+  });
+
+  const renewSub = useMutation({
+    mutationFn: ({ id, paymentMethod }) => api.post(`/subscriptions/${id}/renew`, { paymentMethod }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subscriptions'] });
+      setRenewTarget(null);
+      setRenewError('');
+    },
+    onError: (e) => setRenewError(e.response?.data?.error || 'Không thể gia hạn gói'),
   });
 
   const openModal = () => { setForm(empty); setFormError(''); setShowModal(true); };
@@ -168,7 +181,14 @@ export default function Subscriptions() {
                           <div style={{ fontWeight:600, fontSize:13 }}>{s.member?.user?.name}</div>
                           <div style={{ fontSize:11, color:'var(--text-muted)' }}>{s.member?.user?.email}</div>
                         </td>
-                        <td style={{ fontWeight:500, fontSize:13 }}>{s.package?.name}</td>
+                        <td style={{ fontWeight:500, fontSize:13 }}>
+                          {s.package?.name}
+                          {s.renewals?.length > 0 && (
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>
+                              Đã gia hạn {s.renewals.length} lần
+                            </div>
+                          )}
+                        </td>
                         <td style={{ fontSize:12, color:'var(--text-muted)' }}>{s.startDate}</td>
                         <td style={{ fontSize:12, color: s.status==='expired' ? 'var(--accent-red)' : 'var(--text-muted)' }}>{s.endDate || '—'}</td>
                         <td style={{ fontSize:13 }}>{s.sessionsTotal ? `${s.sessionsUsed}/${s.sessionsTotal}` : '—'}</td>
@@ -179,6 +199,15 @@ export default function Subscriptions() {
                             <button className="btn btn-ghost btn-sm btn-icon" title="In biên lai" onClick={() => printReceipt(s)}>
                               <Printer size={14} color="var(--accent-blue)" />
                             </button>
+                            {s.status !== 'cancelled' && (
+                              <button
+                                className="btn btn-ghost btn-sm"
+                                style={{ color: 'var(--primary)', fontSize: 11 }}
+                                onClick={() => { setRenewTarget(s); setRenewPaymentMethod('cash'); setRenewError(''); }}
+                              >
+                                <RefreshCw size={13} /> Gia hạn
+                              </button>
+                            )}
                             {s.status === 'active' && (
                               <button className="btn btn-ghost btn-sm" style={{ color:'var(--accent-red)', fontSize:11 }}
                                 onClick={() => { if(window.confirm('Hủy gói này?')) cancelSub.mutate(s.id); }}>
@@ -209,6 +238,15 @@ export default function Subscriptions() {
                           <button className="btn btn-ghost btn-sm btn-icon" onClick={() => printReceipt(s)}>
                             <Printer size={14} color="var(--accent-blue)" />
                           </button>
+                          {s.status !== 'cancelled' && (
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              style={{ color: 'var(--primary)', fontSize: 11 }}
+                              onClick={() => { setRenewTarget(s); setRenewPaymentMethod('cash'); setRenewError(''); }}
+                            >
+                              Gia hạn
+                            </button>
+                          )}
                           {s.status === 'active' && (
                             <button className="btn btn-ghost btn-sm" style={{ color:'var(--accent-red)', fontSize:11 }}
                               onClick={() => { if(window.confirm('Hủy gói này?')) cancelSub.mutate(s.id); }}>Hủy</button>
@@ -285,6 +323,50 @@ export default function Subscriptions() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {renewTarget && (
+        <div className="modal-overlay" onClick={() => setRenewTarget(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">Gia hạn gói tập</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setRenewTarget(null)}><X size={16} /></button>
+            </div>
+            <div className="modal-body">
+              {renewError && <div className="alert alert-error">{renewError}</div>}
+              <div className="card" style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 700 }}>{renewTarget.member?.user?.name}</div>
+                <div style={{ color: 'var(--text-secondary)', marginTop: 4 }}>{renewTarget.package?.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+                  {renewTarget.package?.durationDays
+                    ? `Cộng thêm ${renewTarget.package.durationDays} ngày`
+                    : `Cộng thêm ${renewTarget.package?.totalSessions || 0} buổi`}
+                </div>
+                <div style={{ fontSize: 14, color: 'var(--success)', fontWeight: 700, marginTop: 8 }}>
+                  {renewTarget.package?.price?.toLocaleString('vi-VN')}đ
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Phương thức thanh toán</label>
+                <select className="form-input" value={renewPaymentMethod} onChange={(e) => setRenewPaymentMethod(e.target.value)}>
+                  <option value="cash">Tiền mặt</option>
+                  <option value="bank_transfer">Chuyển khoản</option>
+                  <option value="e_wallet">Ví điện tử</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setRenewTarget(null)}>Hủy</button>
+              <button
+                className="btn btn-primary"
+                disabled={renewSub.isPending}
+                onClick={() => renewSub.mutate({ id: renewTarget.id, paymentMethod: renewPaymentMethod })}
+              >
+                <RefreshCw size={15} /> {renewSub.isPending ? 'Đang gia hạn...' : 'Xác nhận gia hạn'}
+              </button>
+            </div>
           </div>
         </div>
       )}

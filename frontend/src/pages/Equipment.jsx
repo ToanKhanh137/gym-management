@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Plus, Wrench, CheckCircle, Pencil } from 'lucide-react';
 import api from '../api/client';
 
 const statusColor = { good: 'badge-green', maintenance: 'badge-yellow', damaged: 'badge-red', retired: 'badge-gray' };

@@ -23,6 +23,8 @@ import MemberFeedback from './pages/MemberFeedback';
 import TrainerStudents from './pages/TrainerStudents';
 import TrainerSchedule from './pages/TrainerSchedule';
 import Maintenance from './pages/Maintenance';
+import StaffSchedule from './pages/StaffSchedule';
+import Promotions from './pages/Promotions';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30000 } } });
 
@@ -98,6 +100,16 @@ function AppRoutes() {
       <Route path="/subscriptions" element={
         <ProtectedRoute roles={['owner', 'staff']}>
           <Layout><Subscriptions /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/staff-schedule" element={
+        <ProtectedRoute roles={['owner', 'staff']}>
+          <Layout><StaffSchedule /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/promotions" element={
+        <ProtectedRoute roles={['owner', 'staff', 'member']}>
+          <Layout><Promotions /></Layout>
         </ProtectedRoute>
       } />
       <Route path="/trainer-students" element={

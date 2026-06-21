@@ -14,6 +14,7 @@ router.get('/my/profile', authenticate, authorize('member'), async (req, res) =>
         user: { select: { name: true, email: true, phone: true, dob: true } },
         subscriptions: { include: { package: true }, where: { status: 'active' } },
         trainingLogs: { orderBy: { checkedInAt: 'desc' }, take: 10 },
+        feedbacks: { orderBy: { createdAt: 'desc' } },
       },
     });
     res.json(member);

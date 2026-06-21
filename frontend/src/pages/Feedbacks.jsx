@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { Star, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2, MessageSquare, Star, X } from 'lucide-react';
 import api from '../api/client';
 
 const TARGET_LABELS = { staff: 'Nhân viên', facility: 'Cơ sở vật chất', pt: 'Huấn luyện viên' };
@@ -16,9 +17,25 @@ function StarRating({ rating }) {
 }
 
 export default function Feedbacks() {
+  const qc = useQueryClient();
+  const [resolveTarget, setResolveTarget] = useState(null);
+  const [response, setResponse] = useState('');
+  const [error, setError] = useState('');
+
   const { data: feedbacks = [], isLoading } = useQuery({
     queryKey: ['feedbacks'],
     queryFn: () => api.get('/feedbacks').then(r => r.data),
+  });
+
+  const resolveFeedback = useMutation({
+    mutationFn: ({ id, responseText }) => api.patch(`/feedbacks/${id}/resolve`, { response: responseText }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['feedbacks'] });
+      setResolveTarget(null);
+      setResponse('');
+      setError('');
+    },
+    onError: (err) => setError(err.response?.data?.error || 'Không thể xử lý phản hồi'),
   });
 
   const avgRating = feedbacks.length
@@ -53,6 +70,12 @@ export default function Feedbacks() {
             <div style={{ fontSize:28, fontWeight:700 }}>{feedbacks.length}</div>
             <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:2 }}>Tổng phản hồi</div>
           </div>
+          <div className="stat-card" style={{ flex:'1 1 140px', minWidth:120, padding:'16px 20px' }}>
+            <div style={{ fontSize:28, fontWeight:700, color:'var(--accent-orange)' }}>
+              {feedbacks.filter((item) => item.status !== 'resolved').length}
+            </div>
+            <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:2 }}>Chờ xử lý</div>
+          </div>
           {byTarget.map(t => (
             <div key={t.type} className="stat-card" style={{ flex:'1 1 140px', minWidth:120, padding:'16px 20px' }}>
               <div style={{ fontSize:22, fontWeight:700, color: TARGET_COLORS[t.type] }}>{t.avg} <span style={{ fontSize:14 }}>⭐</span></div>
@@ -78,7 +101,7 @@ export default function Feedbacks() {
               <div className="mobile-hide-table">
                 <table>
                   <thead>
-                    <tr><th>Hội viên</th><th>Loại</th><th>Đánh giá</th><th>Nhận xét</th><th>Thời gian</th></tr>
+                    <tr><th>Hội viên</th><th>Loại</th><th>Đánh giá</th><th>Nhận xét</th><th>Trạng thái</th><th></th></tr>
                   </thead>
                   <tbody>
                     {feedbacks.map(f => (
@@ -93,7 +116,26 @@ export default function Feedbacks() {
                         <td style={{ fontSize:13, color:'var(--text-secondary)', maxWidth:280 }}>
                           {f.comment || <span style={{ color:'var(--text-muted)', fontStyle:'italic' }}>Không có nhận xét</span>}
                         </td>
-                        <td style={{ fontSize:12, color:'var(--text-muted)', whiteSpace:'nowrap' }}>{new Date(f.createdAt).toLocaleString('vi-VN')}</td>
+                        <td>
+                          <span className={`badge ${f.status === 'resolved' ? 'badge-green' : 'badge-yellow'}`}>
+                            {f.status === 'resolved' ? 'Đã xử lý' : 'Chờ xử lý'}
+                          </span>
+                          {f.response && (
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 5, maxWidth: 220 }}>
+                              {f.response}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {f.status !== 'resolved' && (
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={() => { setResolveTarget(f); setResponse(''); setError(''); }}
+                            >
+                              <CheckCircle2 size={13} /> Xử lý
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -117,6 +159,21 @@ export default function Feedbacks() {
                       </div>
                     </div>
                     {f.comment && <div style={{ fontSize:13, color:'var(--text-secondary)', marginTop:6, padding:'8px 10px', background:'var(--bg-hover)', borderRadius:6 }}>{f.comment}</div>}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                      <span className={`badge ${f.status === 'resolved' ? 'badge-green' : 'badge-yellow'}`}>
+                        {f.status === 'resolved' ? 'Đã xử lý' : 'Chờ xử lý'}
+                      </span>
+                      {f.status !== 'resolved' && (
+                        <button className="btn btn-primary btn-sm" onClick={() => { setResolveTarget(f); setResponse(''); setError(''); }}>
+                          Xử lý
+                        </button>
+                      )}
+                    </div>
+                    {f.response && (
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
+                        Phản hồi: {f.response}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -124,6 +181,46 @@ export default function Feedbacks() {
           )}
         </div>
       </div>
+
+      {resolveTarget && (
+        <div className="modal-overlay" onClick={() => setResolveTarget(null)}>
+          <div className="modal" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">Xử lý phản hồi</span>
+              <button className="btn btn-ghost btn-icon" onClick={() => setResolveTarget(null)}><X size={16} /></button>
+            </div>
+            <div className="modal-body">
+              {error && <div className="alert alert-error">{error}</div>}
+              <div className="card" style={{ marginBottom: 14 }}>
+                <div style={{ fontWeight: 700 }}>{resolveTarget.member?.user?.name}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6 }}>
+                  {resolveTarget.comment || 'Không có nội dung nhận xét'}
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Nội dung phản hồi *</label>
+                <textarea
+                  className="form-input"
+                  rows="4"
+                  value={response}
+                  onChange={(event) => setResponse(event.target.value)}
+                  placeholder="Nhập cách xử lý hoặc phản hồi cho hội viên..."
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setResolveTarget(null)}>Hủy</button>
+              <button
+                className="btn btn-primary"
+                disabled={resolveFeedback.isPending || !response.trim()}
+                onClick={() => resolveFeedback.mutate({ id: resolveTarget.id, responseText: response })}
+              >
+                <CheckCircle2 size={15} /> {resolveFeedback.isPending ? 'Đang lưu...' : 'Đánh dấu đã xử lý'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

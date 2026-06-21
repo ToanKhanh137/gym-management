@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ticket, Calendar, CheckCircle2, XCircle, Clock, Plus, X } from 'lucide-react';
+import { Ticket, CheckCircle2, XCircle, Plus, X } from 'lucide-react';
 import api from '../api/client';
 
 const STATUS_CONFIG = {
