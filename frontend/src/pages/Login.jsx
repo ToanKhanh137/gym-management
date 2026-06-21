@@ -43,7 +43,7 @@ export default function Login() {
   };
 
   return (
-    <div className="login-page" style={{ overflowY: 'auto' }}>
+    <div className="login-page">
       {/* Left — hero image */}
       <div className="login-left">
         <img src={gymBg} alt="Gym" className="login-bg" />
@@ -58,27 +58,27 @@ export default function Login() {
       </div>
 
       {/* Right — login form */}
-      <div className="login-right" style={{ maxWidth: 400, justifyContent: 'center', padding: '32px 24px', overflowY: 'auto' }}>
-        <div className="login-logo" style={{ marginBottom: 20 }}>
-          <div className="login-logo-icon" style={{ width: 36, height: 36, fontSize: 18 }}><Dumbbell size={18} color="white" /></div>
+      <div className="login-right">
+        <div className="login-logo">
+          <div className="login-logo-icon"><Dumbbell size={22} color="white" /></div>
           <div>
-            <div className="login-logo-name" style={{ fontSize: 16 }}>GymPro</div>
-            <div className="login-logo-tagline" style={{ fontSize: 10 }}>Hệ thống quản lý phòng tập</div>
+            <div className="login-logo-name">GymPro</div>
+            <div className="login-logo-tagline">Hệ thống quản lý phòng tập</div>
           </div>
         </div>
 
-        <h1 className="login-title" style={{ fontSize: 20, marginBottom: 4 }}>Xin chào!</h1>
-        <p className="login-sub" style={{ fontSize: 13, marginBottom: 20 }}>Đăng nhập để tiếp tục quản lý</p>
+        <h1 className="login-title">Xin chào!</h1>
+        <p className="login-sub">Đăng nhập để tiếp tục quản lý</p>
 
         {error && (
-          <div className="alert alert-error" style={{ marginBottom: 12, padding: '8px 12px', fontSize: 13 }}>
+          <div className="alert alert-error" style={{ marginBottom: 12 }}>
             <AlertTriangle size={14} /> {error}
           </div>
         )}
 
-        <form className="login-form" onSubmit={handleSubmit} style={{ gap: 12 }}>
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Email</label>
+            <label className="form-label">Email</label>
             <input
               id="email"
               className="form-input"
@@ -87,11 +87,10 @@ export default function Login() {
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               required
-              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Mật khẩu</label>
+            <label className="form-label">Mật khẩu</label>
             <input
               id="password"
               className="form-input"
@@ -100,13 +99,12 @@ export default function Login() {
               value={form.password}
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               required
-              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
-          <button id="login-btn" type="submit" className="login-btn" disabled={loading} style={{ padding: '10px', fontSize: 13, marginTop: 4 }}>
+          <button id="login-btn" type="submit" className="login-btn" disabled={loading} style={{ marginTop: 8 }}>
             {loading
-            ? <><Loader2 size={15} style={{ animation: 'spin 0.7s linear infinite' }} /> Đang đăng nhập...</>
-            : <><Lock size={15} /> Đăng nhập</>
+            ? <><Loader2 size={16} style={{ animation: 'spin 0.7s linear infinite' }} /> Đang đăng nhập...</>
+            : <><Lock size={16} /> Đăng nhập</>
           }
           </button>
         </form>
@@ -117,26 +115,38 @@ export default function Login() {
 
         {/* Quick login for dev/demo */}
         <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-          <label className="form-label" style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, display: 'block', textAlign: 'center' }}>
-            TRẢI NGHIỆM NHANH (DEMO ACCOUNTS)
-          </label>
-          <select
-            className="form-input"
-            style={{ fontSize: 12, padding: '8px 12px', height: 'auto', background: 'var(--bg-card)', cursor: 'pointer' }}
-            onChange={(e) => {
-              if (e.target.value) {
-                const [email, pw] = e.target.value.split('|');
-                quickLogin(email, pw);
-              }
-            }}
-            defaultValue=""
-          >
-            <option value="" disabled>-- Chọn tài khoản demo để vào nhanh --</option>
-            <option value="owner@gym.com|owner123">Chủ phòng tập (Owner)</option>
-            <option value="staff@gym.com|staff123">Nhân viên quản lý (Staff)</option>
-            <option value="pt@gym.com|pt123">Huấn luyện viên cá nhân (PT)</option>
-            <option value="member@gym.com|member123">Hội viên (Member)</option>
-          </select>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>
+            TÀI KHOẢN DEMO
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {[
+              { label: 'Chủ phòng tập', email: 'owner@gym.com', pw: 'owner123' },
+              { label: 'Nhân viên',       email: 'staff@gym.com', pw: 'staff123' },
+              { label: 'HLV cá nhân',     email: 'pt@gym.com',    pw: 'pt123' },
+              { label: 'Hội viên',        email: 'member@gym.com', pw: 'member123' },
+            ].map(q => (
+              <button
+                key={q.email}
+                type="button"
+                onClick={() => quickLogin(q.email, q.pw)}
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  padding: '6px 8px',
+                  fontSize: 11,
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

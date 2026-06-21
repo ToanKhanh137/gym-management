@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, User, Mail, Lock, Phone, Calendar, Loader2, ArrowLeft } from 'lucide-react';
+import { Dumbbell, Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import gymBg from '../assets/gym_bg.png';
 
@@ -26,7 +26,7 @@ export default function Register() {
   };
 
   return (
-    <div className="login-page" style={{ overflowY: 'auto' }}>
+    <div className="login-page">
       {/* Left — hero image */}
       <div className="login-left">
         <img src={gymBg} alt="Gym" className="login-bg" />
@@ -41,33 +41,33 @@ export default function Register() {
       </div>
 
       {/* Right — register form */}
-      <div className="login-right" style={{ maxWidth: 400, padding: '24px 20px', justifyContent: 'center', overflowY: 'auto' }}>
+      <div className="login-right">
         <div style={{ marginBottom: 12 }}>
           <button onClick={() => navigate('/login')} className="btn btn-ghost btn-sm" style={{ padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
             <ArrowLeft size={13} /> Quay lại đăng nhập
           </button>
         </div>
 
-        <div className="login-logo" style={{ marginBottom: 16 }}>
-          <div className="login-logo-icon" style={{ width: 36, height: 36, fontSize: 18 }}><Dumbbell size={18} color="white" /></div>
+        <div className="login-logo">
+          <div className="login-logo-icon"><Dumbbell size={22} color="white" /></div>
           <div>
-            <div className="login-logo-name" style={{ fontSize: 16 }}>GymPro</div>
-            <div className="login-logo-tagline" style={{ fontSize: 10 }}>Đăng ký hội viên mới</div>
+            <div className="login-logo-name">GymPro</div>
+            <div className="login-logo-tagline">Đăng ký hội viên mới</div>
           </div>
         </div>
 
-        <h1 className="login-title" style={{ fontSize: 20, marginBottom: 4 }}>Đăng ký tài khoản</h1>
-        <p className="login-sub" style={{ fontSize: 13, marginBottom: 16 }}>Trở thành hội viên để theo dõi dịch vụ</p>
+        <h1 className="login-title">Đăng ký tài khoản</h1>
+        <p className="login-sub">Trở thành hội viên để theo dõi dịch vụ</p>
 
         {error && (
-          <div className="alert alert-error" style={{ marginBottom: 12, padding: '8px 12px', fontSize: 13 }}>
+          <div className="alert alert-error" style={{ marginBottom: 12 }}>
             {error}
           </div>
         )}
 
-        <form className="login-form" onSubmit={handleSubmit} style={{ gap: 10 }}>
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Họ và tên *</label>
+            <label className="form-label">Họ và tên *</label>
             <input
               className="form-input"
               type="text"
@@ -75,12 +75,11 @@ export default function Register() {
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               required
-              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Email *</label>
+            <label className="form-label">Email *</label>
             <input
               className="form-input"
               type="email"
@@ -88,12 +87,11 @@ export default function Register() {
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               required
-              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
 
           <div className="form-group">
-            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Mật khẩu *</label>
+            <label className="form-label">Mật khẩu *</label>
             <input
               className="form-input"
               type="password"
@@ -102,37 +100,34 @@ export default function Register() {
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               required
               minLength={6}
-              style={{ padding: '8px 12px', fontSize: 13 }}
             />
           </div>
 
-          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
-              <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Số điện thoại</label>
+              <label className="form-label">Số điện thoại</label>
               <input
                 className="form-input"
                 type="tel"
                 placeholder="0987xxxxxx"
                 value={form.phone}
                 onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                style={{ padding: '8px 12px', fontSize: 13 }}
               />
             </div>
             <div className="form-group">
-              <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>Ngày sinh</label>
+              <label className="form-label">Ngày sinh</label>
               <input
                 className="form-input"
                 type="date"
                 value={form.dob}
                 onChange={e => setForm(f => ({ ...f, dob: e.target.value }))}
-                style={{ padding: '8px 12px', fontSize: 13 }}
               />
             </div>
           </div>
 
-          <button id="register-btn" type="submit" className="login-btn" disabled={loading} style={{ marginTop: 8, padding: '10px', fontSize: 13 }}>
+          <button id="register-btn" type="submit" className="login-btn" disabled={loading} style={{ marginTop: 8 }}>
             {loading
-              ? <><Loader2 size={15} style={{ animation: 'spin 0.7s linear infinite' }} /> Đang xử lý...</>
+              ? <><Loader2 size={16} style={{ animation: 'spin 0.7s linear infinite' }} /> Đang xử lý...</>
               : 'Đăng ký ngay'
             }
           </button>
